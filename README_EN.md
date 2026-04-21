@@ -14,6 +14,14 @@
 </p>
 
 <p align="center">
+  <img
+    alt="autoresearch live demo — each iteration auto-predicts, implements, evaluates, and commits until the goal is reached"
+    src="docs/public/demo.svg"
+    width="720"
+  />
+</p>
+
+<p align="center">
   <img alt="VitePress" src="https://img.shields.io/badge/VitePress-1.6+-646CFF?logo=vite&logoColor=white"/>
   <img alt="Python" src="https://img.shields.io/badge/Python-stdlib only-3776AB?logo=python&logoColor=white"/>
   <img alt="Bilingual" src="https://img.shields.io/badge/Language-EN%20%2B%20ZH-B8593E"/>

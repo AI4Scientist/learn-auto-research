@@ -9,7 +9,6 @@
 Code examples: [code/](./code/)  
 Practice project: [Project 06 — End-to-End Research Project](/en/projects/project-06-end-to-end-research/)
 
-[中文版本 →](/zh/lectures/lecture-11-universal-ship-pipeline/)
 
 ---
 

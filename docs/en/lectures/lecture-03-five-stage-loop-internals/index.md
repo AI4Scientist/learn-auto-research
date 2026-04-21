@@ -9,7 +9,6 @@
 Code examples: [code/](./code/)  
 Practice project: [Project 02 — Baseline to Optimal](/en/projects/project-02-baseline-to-optimal/)
 
-[中文版本 →](/zh/lectures/lecture-03-five-stage-loop-internals/)
 
 ---
 

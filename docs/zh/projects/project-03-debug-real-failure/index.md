@@ -1,6 +1,5 @@
 # 项目 03 — 调试真实故障
 
-[English Version →](/en/projects/project-03-debug-real-failure/)
 
 **配套讲座**：[第 05 讲](/zh/lectures/lecture-05-scientific-debugging/) + [第 06 讲](/zh/lectures/lecture-06-error-crushing-pipeline/)  
 **起始代码**：[projects/project-03/starter/](https://github.com/AI4Scientist/learn-auto-research/tree/main/projects/project-03/starter/)  

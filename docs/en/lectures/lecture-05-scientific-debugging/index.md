@@ -9,7 +9,6 @@
 Code examples: [code/](./code/)  
 Practice project: [Project 03 — Debug a Real Failure](/en/projects/project-03-debug-real-failure/)
 
-[中文版本 →](/zh/lectures/lecture-05-scientific-debugging/)
 
 ---
 

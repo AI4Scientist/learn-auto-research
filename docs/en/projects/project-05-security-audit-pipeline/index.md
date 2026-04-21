@@ -1,6 +1,5 @@
 # Project 05 — Security Audit Pipeline
 
-[中文版本 →](/zh/projects/project-05-security-audit-pipeline/)
 
 **Paired with**: [Lecture 09](/en/lectures/lecture-09-stride-owasp-security/) + [Lecture 10](/en/lectures/lecture-10-twelve-dimension-scenarios/)  
 **Starter code**: [projects/project-05/starter/](https://github.com/AI4Scientist/learn-auto-research/tree/main/projects/project-05/starter/)  

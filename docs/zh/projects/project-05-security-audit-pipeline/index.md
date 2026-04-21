@@ -1,6 +1,5 @@
 # 项目 05 — 安全审计流水线
 
-[English Version →](/en/projects/project-05-security-audit-pipeline/)
 
 **配套讲座**：[第 09 讲](/zh/lectures/lecture-09-stride-owasp-security/) + [第 10 讲](/zh/lectures/lecture-10-twelve-dimension-scenarios/)  
 **起始代码**：[projects/project-05/starter/](https://github.com/AI4Scientist/learn-auto-research/tree/main/projects/project-05/starter/)  

@@ -9,7 +9,6 @@
 Code examples: [code/](./code/)  
 Practice project: [Project 04 — Architecture Decision Debate](/en/projects/project-04-architecture-debate/)
 
-[中文版本 →](/zh/lectures/lecture-08-adversarial-refinement/)
 
 ---
 

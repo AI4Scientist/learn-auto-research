@@ -1,6 +1,5 @@
 # Welcome to Learn AutoResearch
 
-[中文版本 →](/zh/)
 
 Learn AutoResearch is a project-based course on automating research using the autoresearch framework — a generalization of Karpathy's autonomous ML training loop to any domain with a measurable metric.
 

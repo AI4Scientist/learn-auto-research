@@ -9,7 +9,6 @@
 Code examples: [code/](./code/)  
 Practice project: [Project 05 — Security Audit Pipeline](/en/projects/project-05-security-audit-pipeline/)
 
-[中文版本 →](/zh/lectures/lecture-10-twelve-dimension-scenarios/)
 
 ---
 

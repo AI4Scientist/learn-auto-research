@@ -14,14 +14,6 @@
 </p>
 
 <p align="center">
-  <img
-    alt="autoresearch 运行演示——每次迭代自动预测、实现、评估、提交，直到目标达成"
-    src="docs/public/demo.svg"
-    width="720"
-  />
-</p>
-
-<p align="center">
   <img alt="VitePress" src="https://img.shields.io/badge/VitePress-1.6+-646CFF?logo=vite&logoColor=white"/>
   <img alt="Python" src="https://img.shields.io/badge/Python-仅标准库-3776AB?logo=python&logoColor=white"/>
   <img alt="Bilingual" src="https://img.shields.io/badge/语言-中文%20%2B%20英文-B8593E"/>
@@ -60,6 +52,14 @@ flowchart LR
 ```
 
 每次迭代：一个假设，一个改变，一次测量。Git 记录每次实验。你醒来看到按分数排列的结果表。
+
+<p align="center">
+  <img
+    alt="autoresearch 运行演示——每次迭代自动预测、实现、评估、提交，直到目标达成"
+    src="docs/public/demo.svg"
+    width="720"
+  />
+</p>
 
 ---
 

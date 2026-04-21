@@ -6,6 +6,14 @@
 </p>
 
 <p align="center">
+  <img
+    alt="课程前言图"
+    src="https://github.com/user-attachments/assets/d2f0af5e-6508-4ffc-b01b-af4222b91638"
+    width="720"
+  />
+</p>
+
+<p align="center">
   <img alt="VitePress" src="https://img.shields.io/badge/VitePress-1.6+-646CFF?logo=vite&logoColor=white"/>
   <img alt="Python" src="https://img.shields.io/badge/Python-仅标准库-3776AB?logo=python&logoColor=white"/>
   <img alt="Bilingual" src="https://img.shields.io/badge/语言-中文%20%2B%20英文-B8593E"/>

@@ -1,32 +1,99 @@
 # Learn AutoResearch
 
-> 设定目标 → Agent 运行循环 → 你醒来看结果
+<p align="center">
+  <strong>定义指标，设定目标，让 Agent 彻夜迭代。</strong><br/>
+  基于项目的自动化研究循环课程——灵感来自 Karpathy 自主 ML 训练循环。
+</p>
 
-**Learn AutoResearch** 是一门基于项目的课程，教你用 autoresearch 框架实现研究自动化——它是 Karpathy 自主 ML 训练循环的泛化版本，适用于任何有可测量指标的领域。
+<p align="center">
+  <img alt="VitePress" src="https://img.shields.io/badge/VitePress-1.6+-646CFF?logo=vite&logoColor=white"/>
+  <img alt="Python" src="https://img.shields.io/badge/Python-仅标准库-3776AB?logo=python&logoColor=white"/>
+  <img alt="Bilingual" src="https://img.shields.io/badge/语言-中文%20%2B%20英文-B8593E"/>
+  <img alt="Projects" src="https://img.shields.io/badge/项目-6个动手实践-6B7F5A"/>
+  <img alt="License" src="https://img.shields.io/badge/许可证-MIT-C7C6C5"/>
+</p>
 
-[English →](README_EN.md) | [在线文档 →](https://zhimin-z.github.io/learn-auto-research/)
+<p align="center">
+  <a href="README_EN.md">English →</a> &nbsp;|&nbsp;
+  <a href="https://AI4Scientist.github.io/learn-auto-research/">在线文档 →</a>
+</p>
+
+---
+
+## 这是什么？
+
+**Learn AutoResearch** 教你自动化研究循环：定义可测量的指标，让 Agent 生成假设、实现改变、评估结果、提交改进——然后彻夜重复。
+
+核心理念来自 [Andrej Karpathy 的 autoresearch](https://github.com/karpathy/autoresearch)。本课程将其泛化到任何可以写出 `{"pass": bool, "score": float}` 的领域。
+
+---
+
+## 循环是如何运作的
+
+```mermaid
+flowchart LR
+    A([定义指标]) --> B([预测])
+    B --> C([实现])
+    C --> D([评估])
+    D -->|分数提升| E([提交])
+    D -->|分数下降| F([回滚])
+    E --> G{目标达成?}
+    F --> B
+    G -->|否| B
+    G -->|是| H([发布])
+```
+
+每次迭代：一个假设，一个改变，一次测量。Git 记录每次实验。你醒来看到按分数排列的结果表。
 
 ---
 
 ## 你将学到什么
 
-- **定义可测量的研究目标** — 把模糊的目标转化为 agent 能自动优化的机械指标
-- **运行自主改进循环** — 每次迭代只做一个改变，自动回滚，git 作为实验记忆
-- **科学调试** — 可证伪的假设，基于证据的调查，错误归零自动停止
-- **行动前预判** — 5 位专家视角在提交任何重大改变前进行分析
-- **自主安全审计** — STRIDE + OWASP + 红队分析，带代码级证据
-- **自信地发布** — 覆盖代码、内容、部署的 8 阶段发布流水线
+| # | 技能 | 如何练习 |
+|---|------|---------|
+| 1 | **可测量目标** | 把"让它更快"变成 `median_time_s < 0.5` |
+| 2 | **自主改进循环** | 每次迭代一个改变，自动回滚 |
+| 3 | **科学调试** | 可证伪假设，基于证据的调查 |
+| 4 | **行动前预判** | 提交任何重大改变前的 5 专家视角 |
+| 5 | **安全审计** | STRIDE + OWASP + 红队分析，带代码级证据 |
+| 6 | **发布** | 8 阶段流水线：代码 → 内容 → 部署 |
+
+---
 
 ## 课程结构
 
-| 阶段 | 主题 | 讲义 | 项目 |
+| 阶段 | 讲义 | 项目 | 目标 |
 |------|------|------|------|
-| 1 理解原理 | 为什么手动迭代失败，可测量目标 | L01–L02 | P01 排序优化 |
-| 2 核心循环 | 五阶段循环内部机制，遇到瓶颈的策略 | L03–L04 | P02 函数拟合 |
-| 3 调试修复 | 科学调试，错误瀑布解决 | L05–L06 | P03 FastAPI 调试 |
-| 4 多视角预测 | 5 专家预判，对抗性精化 | L07–L08 | P04 架构辩论 |
-| 5 安全场景 | STRIDE/OWASP 安全审计，12 维场景探索 | L09–L10 | P05 安全审计 |
-| 6 发布高级 | 通用发布流水线，过夜运行 | L11–L12 | P06 端到端流水线 |
+| **1 — 理解原理** | L01 为什么手动迭代失败 · L02 可测量目标 | P01 排序优化 | `median_time_s < 0.5` |
+| **2 — 核心循环** | L03 五阶段循环 · L04 遇到瓶颈时 | P02 函数拟合 | `rmse < 0.05` |
+| **3 — 调试修复** | L05 科学调试 · L06 错误归零流水线 | P03 FastAPI 调试 | `test_pass_rate == 1.0` |
+| **4 — 多视角预测** | L07 五专家预判 · L08 对抗性精化 | P04 架构辩论 | `weighted_score ≥ 0.65` |
+| **5 — 安全场景** | L09 STRIDE+OWASP 审计 · L10 12 维场景探索 | P05 安全审计 | `security_score == 1.0` |
+| **6 — 发布高级** | L11 通用发布流水线 · L12 过夜运行 | P06 端到端流水线 | `rouge1_recall ≥ 0.60` |
+
+---
+
+## 项目代码
+
+每个项目都附带可运行的起始代码和参考答案：
+
+```
+projects/
+├── project-01/   排序优化          (Python, 标准库)
+├── project-02/   函数拟合          (Python, 标准库)
+├── project-03/   FastAPI 调试      (Python, 标准库)
+├── project-04/   架构辩论          (Python, 标准库)
+├── project-05/   安全审计          (Python, 标准库)
+└── project-06/   端到端流水线      (Python, 标准库)
+```
+
+每个 `starter/evaluate.py` 遵循统一协议：
+
+```python
+print(json.dumps({"pass": bool, "score": float}))
+```
+
+---
 
 ## 快速开始
 
@@ -41,16 +108,35 @@ npm run dev
 npm run build
 ```
 
+---
+
 ## 技术栈
 
-- [VitePress](https://vitepress.dev/) 1.6+ 静态站点生成
-- [vitepress-plugin-mermaid](https://github.com/emersonbottero/vitepress-plugin-mermaid) 流程图渲染
-- 双语：英文（默认）+ 中文（/zh/）
-- 项目示例代码：Python（仅标准库）
+| 层级 | 工具 |
+|------|------|
+| 站点生成器 | [VitePress](https://vitepress.dev/) 1.6+ |
+| 流程图 | [vitepress-plugin-mermaid](https://github.com/emersonbottero/vitepress-plugin-mermaid) |
+| 语言 | 中文（默认）+ 英文（`/en/`） |
+| 项目代码 | Python 3.10+，仅标准库，无需 pip |
+
+---
+
+## 引用
+
+```bibtex
+@software{learn_autoresearch2026,
+  title  = {Learn AutoResearch: A Project-Based Course on Autonomous Research Loops},
+  author = {Zhao, Zhimin},
+  year   = {2026},
+  url    = {https://github.com/AI4Scientist/learn-auto-research}
+}
+```
+
+---
 
 ## 致谢
 
-本课程的核心循环理念来源于 [Andrej Karpathy 的 autoresearch](https://github.com/karpathy/autoresearch)。
+核心循环理念来源于 [Andrej Karpathy 的 autoresearch](https://github.com/karpathy/autoresearch)。
 
 ## 许可证
 

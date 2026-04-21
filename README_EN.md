@@ -1,32 +1,99 @@
 # Learn AutoResearch
 
-> Set the GOAL → The agent runs the LOOP → You wake up to results.
+<p align="center">
+  <strong>Define a metric. Set a target. Let the agent iterate overnight.</strong><br/>
+  A project-based course on autonomous research loops — inspired by Karpathy's self-improving ML training loop.
+</p>
 
-**Learn AutoResearch** is a project-based course on automating research using the autoresearch framework — a generalization of Karpathy's autonomous ML training loop to any domain with a measurable metric.
+<p align="center">
+  <img alt="VitePress" src="https://img.shields.io/badge/VitePress-1.6+-646CFF?logo=vite&logoColor=white"/>
+  <img alt="Python" src="https://img.shields.io/badge/Python-stdlib only-3776AB?logo=python&logoColor=white"/>
+  <img alt="Bilingual" src="https://img.shields.io/badge/Language-EN%20%2B%20ZH-B8593E"/>
+  <img alt="Projects" src="https://img.shields.io/badge/Projects-6 hands--on-6B7F5A"/>
+  <img alt="License" src="https://img.shields.io/badge/License-MIT-C7C6C5"/>
+</p>
 
-[中文 →](README.md) | [Live Docs →](https://zhimin-z.github.io/learn-auto-research/)
+<p align="center">
+  <a href="README.md">中文版 →</a> &nbsp;|&nbsp;
+  <a href="https://AI4Scientist.github.io/learn-auto-research/">Live Docs →</a>
+</p>
+
+---
+
+## What Is This?
+
+**Learn AutoResearch** teaches you to automate the research loop: define a measurable metric, let an agent generate hypotheses, implement changes, evaluate results, and commit improvements — then repeat overnight.
+
+The core idea comes from [Andrej Karpathy's autoresearch](https://github.com/karpathy/autoresearch). This course generalizes it beyond ML to any domain where you can write `{"pass": bool, "score": float}`.
+
+---
+
+## How the Loop Works
+
+```mermaid
+flowchart LR
+    A([Define Metric]) --> B([Predict])
+    B --> C([Implement])
+    C --> D([Evaluate])
+    D -->|score improved| E([Commit])
+    D -->|score worse| F([Revert])
+    E --> G{Target met?}
+    F --> B
+    G -->|no| B
+    G -->|yes| H([Ship])
+```
+
+Each iteration: one hypothesis, one change, one measurement. Git records every experiment. You wake up to a ranked table of what worked.
 
 ---
 
 ## What You Will Learn
 
-- **Define measurable research goals** — turn vague objectives into mechanical metrics any agent can optimize
-- **Run autonomous improvement loops** — one change per iteration, automatic rollback, git as memory
-- **Debug scientifically** — falsifiable hypotheses, evidence-based investigation, zero-error termination
-- **Predict before acting** — five expert perspectives before committing to any major change
-- **Audit security autonomously** — STRIDE + OWASP + red-team analysis with code-level evidence
-- **Ship with confidence** — 8-phase pipeline covering code, content, and deployments
+| # | Skill | How You Practice It |
+|---|-------|---------------------|
+| 1 | **Measurable goals** | Turn "make it faster" into `median_time_s < 0.5` |
+| 2 | **Autonomous loops** | One change per iteration, automatic rollback |
+| 3 | **Scientific debugging** | Falsifiable hypotheses, evidence-based investigation |
+| 4 | **Predict before acting** | 5-expert perspectives before any major change |
+| 5 | **Security auditing** | STRIDE + OWASP + red-team with code-level evidence |
+| 6 | **Shipping** | 8-phase pipeline: code → content → deployment |
+
+---
 
 ## Curriculum
 
-| Phase | Topic | Lectures | Project |
-|-------|-------|----------|---------|
-| 1 Foundations | Why manual iteration fails, measurable goals | L01–L02 | P01 Sort optimization |
-| 2 Core Loop | 5-stage loop internals, pivot strategies | L03–L04 | P02 Function fitting |
-| 3 Debug & Fix | Scientific debugging, error cascade crushing | L05–L06 | P03 FastAPI debugging |
-| 4 Predict & Reason | 5-expert prediction, adversarial refinement | L07–L08 | P04 Architecture debate |
-| 5 Security & Scenarios | STRIDE/OWASP audit, 12-dimension exploration | L09–L10 | P05 Security audit |
-| 6 Ship & Advanced | Universal ship pipeline, overnight runs | L11–L12 | P06 End-to-end pipeline |
+| Phase | Lectures | Project | Goal |
+|-------|----------|---------|------|
+| **1 — Foundations** | L01 Why manual iteration fails · L02 Measurable goals | P01 Sort optimization | `median_time_s < 0.5` |
+| **2 — Core Loop** | L03 Five-stage internals · L04 When stuck | P02 Function fitting | `rmse < 0.05` |
+| **3 — Debug & Fix** | L05 Scientific debugging · L06 Error-crushing pipeline | P03 FastAPI debugging | `test_pass_rate == 1.0` |
+| **4 — Predict & Reason** | L07 Five-expert prediction · L08 Adversarial refinement | P04 Architecture debate | `weighted_score ≥ 0.65` |
+| **5 — Security & Scenarios** | L09 STRIDE+OWASP audit · L10 12-dimension exploration | P05 Security audit | `security_score == 1.0` |
+| **6 — Ship & Advanced** | L11 Universal ship pipeline · L12 Overnight runs | P06 End-to-end pipeline | `rouge1_recall ≥ 0.60` |
+
+---
+
+## Project Code
+
+Every project ships with a runnable starter and reference solution:
+
+```
+projects/
+├── project-01/   sort optimization      (Python, stdlib)
+├── project-02/   function fitting        (Python, stdlib)
+├── project-03/   FastAPI debugging       (Python, stdlib)
+├── project-04/   architecture debate     (Python, stdlib)
+├── project-05/   security audit          (Python, stdlib)
+└── project-06/   end-to-end pipeline     (Python, stdlib)
+```
+
+Each `starter/evaluate.py` follows the contract:
+
+```python
+print(json.dumps({"pass": bool, "score": float}))
+```
+
+---
 
 ## Quick Start
 
@@ -41,16 +108,35 @@ npm run dev
 npm run build
 ```
 
+---
+
 ## Tech Stack
 
-- [VitePress](https://vitepress.dev/) 1.6+ static site generation
-- [vitepress-plugin-mermaid](https://github.com/emersonbottero/vitepress-plugin-mermaid) for diagrams
-- Bilingual: English (root) + Chinese (/zh/)
-- Project code: Python (stdlib only, no pip required)
+| Layer | Tool |
+|-------|------|
+| Site generator | [VitePress](https://vitepress.dev/) 1.6+ |
+| Diagrams | [vitepress-plugin-mermaid](https://github.com/emersonbottero/vitepress-plugin-mermaid) |
+| Languages | English (root) + Chinese (`/zh/`) |
+| Project code | Python 3.10+, stdlib only — no pip required |
+
+---
+
+## Citation
+
+```bibtex
+@software{learn_autoresearch2026,
+  title  = {Learn AutoResearch: A Project-Based Course on Autonomous Research Loops},
+  author = {Zhao, Zhimin},
+  year   = {2026},
+  url    = {https://github.com/AI4Scientist/learn-auto-research}
+}
+```
+
+---
 
 ## Acknowledgements
 
-The core loop concept is inspired by [Andrej Karpathy's autoresearch](https://github.com/karpathy/autoresearch).
+Core loop concept inspired by [Andrej Karpathy's autoresearch](https://github.com/karpathy/autoresearch).
 
 ## License
 

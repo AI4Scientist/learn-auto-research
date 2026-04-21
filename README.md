@@ -32,7 +32,7 @@
 
 **Learn AutoResearch** 教你自动化研究循环：定义可测量的指标，让 Agent 生成假设、实现改变、评估结果、提交改进——然后彻夜重复。
 
-核心理念来自 [Andrej Karpathy 的 autoresearch](https://github.com/karpathy/autoresearch)。本课程将其泛化到任何可以写出 `{"pass": bool, "score": float}` 的领域。
+核心理念来自 Andrej Karpathy 的 [AutoResearch](https://github.com/karpathy/autoresearch)。本课程将其泛化到任何可以写出 `{"pass": bool, "score": float}` 的领域。
 
 ---
 

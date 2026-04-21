@@ -3,8 +3,8 @@
 [中文版本 →](/zh/projects/project-04-architecture-debate/)
 
 **Paired with**: [Lecture 07](/en/lectures/lecture-07-five-expert-predict/) + [Lecture 08](/en/lectures/lecture-08-adversarial-refinement/)  
-**Starter code**: [projects/project-04/starter/](https://github.com/zhimin-z/learn-auto-research/tree/main/projects/project-04/starter/)  
-**Solution**: [projects/project-04/solution/](https://github.com/zhimin-z/learn-auto-research/tree/main/projects/project-04/solution/)
+**Starter code**: [projects/project-04/starter/](https://github.com/AI4Scientist/learn-auto-research/tree/main/projects/project-04/starter/)  
+**Solution**: [projects/project-04/solution/](https://github.com/AI4Scientist/learn-auto-research/tree/main/projects/project-04/solution/)
 
 ---
 

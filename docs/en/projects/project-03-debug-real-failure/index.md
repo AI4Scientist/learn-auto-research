@@ -3,8 +3,8 @@
 [中文版本 →](/zh/projects/project-03-debug-real-failure/)
 
 **Paired with**: [Lecture 05](/en/lectures/lecture-05-scientific-debugging/) + [Lecture 06](/en/lectures/lecture-06-error-crushing-pipeline/)  
-**Starter code**: [projects/project-03/starter/](https://github.com/zhimin-z/learn-auto-research/tree/main/projects/project-03/starter/)  
-**Solution**: [projects/project-03/solution/](https://github.com/zhimin-z/learn-auto-research/tree/main/projects/project-03/solution/)
+**Starter code**: [projects/project-03/starter/](https://github.com/AI4Scientist/learn-auto-research/tree/main/projects/project-03/starter/)  
+**Solution**: [projects/project-03/solution/](https://github.com/AI4Scientist/learn-auto-research/tree/main/projects/project-03/solution/)
 
 ---
 

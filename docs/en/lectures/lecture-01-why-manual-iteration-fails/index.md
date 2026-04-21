@@ -1,102 +1,103 @@
 # Lecture 01 — Why Manual Iteration Fails
 
-[中文版本 →](/zh/lectures/lecture-01-why-manual-iteration-fails/)
+`[ L01 ] L02 > L03 > L04 > L05 > L06 | L07 > L08 > L09 > L10 > L11 > L12`
+
+> *"You sleep. The experiments don't have to."* — The bottleneck in manual research is you, not the model.
+>
+> **Core idea**: Why the loop beats the researcher, and the three principles that make it possible.
 
 Code examples: [code/](./code/)  
 Practice project: [Project 01 — Your First Research Loop](/en/projects/project-01-first-research-loop/)
 
+[中文版本 →](/zh/lectures/lecture-01-why-manual-iteration-fails/)
+
 ---
 
-In 2025, Andrej Karpathy published a 630-line Python script that could run 100 ML experiments per night — unsupervised, automatically reverting failures, compounding every improvement. The result: models that took experienced researchers weeks to tune were surpassed in 48 hours of overnight runs.
+## The Problem
 
-What made this possible wasn't a smarter model. It was a smarter loop.
+The bottleneck in manual research is human attention. When you sleep, experiments stop. When you're in meetings, experiments stop. When an experiment breaks things, you often skip the rollback — and bad state accumulates.
 
-## The Problem with Manual Iteration
+On a good day: 3–5 experiments. Typical day: 1–2. Three fatal flaws:
 
-Most researchers iterate like this: run an experiment, wait, analyze results, form a hypothesis, make a change, repeat. On a good day, that's 3–5 experiments. On a typical day, it's 1–2. Each experiment requires human attention: reading outputs, deciding what to try next, manually reverting when something breaks.
+**Attention is the bottleneck.** The research loop is gated by your calendar.
 
-This approach has three fatal flaws:
+**Manual rollback is slow.** Bad experiments rarely get reverted. Broken state accumulates.
 
-**Human attention is the bottleneck.** You can't run experiments while sleeping, while in meetings, or while working on something else. The research loop is gated by your availability.
+**Subjective judgment corrupts results.** "This looks promising" isn't a metric. Without mechanical evaluation, feel-good experiments get kept even when they don't improve the target.
 
-**Manual reversion is slow and lossy.** When an experiment makes things worse, reverting it is manual work — and researchers often don't revert at all, letting bad state accumulate in the codebase.
+## The Solution
 
-**Subjective judgment creeps in.** "This looks promising" is not a metric. Without mechanical evaluation, researchers keep experiments that feel good but don't actually improve the target.
+```
++----------+      +------------+      +----------+
+|  change  | ---> |  evaluate  | ---> |  better? |
+|  one     |      |  python    |      |          |
+|  thing   |      | evaluate.py|      +----+-----+
++----------+      +------------+           |
+                                      yes → git commit (keep)
+                                      no  → git revert (discard)
+                                           |
+                        (loop until target reached or budget exhausted)
+```
 
-## Karpathy's Insight
+One number. One direction. Automatic rollback. That's the entire secret of Karpathy's autoresearch script.
 
-Karpathy's autoresearch script embodied three principles that changed everything:
+## How It Works
 
-**One metric. One direction.** `val_bpb` (validation bits per byte). Lower is better. Not "model quality" or "training stability" — a single number that tells the agent exactly what to optimize. Every decision collapses to: did this change lower `val_bpb`?
+In 2025, Andrej Karpathy published a 630-line script that ran 100 ML experiments per night, unsupervised. It embodied three principles:
 
-**Constrained scope.** The agent could only modify `train.py`. It could not touch data preparation, the tokenizer, or evaluation code. This constraint meant every failure was isolatable: if the metric got worse, it was because of a change in `train.py`, nothing else.
+**1. One metric, one direction.**
 
-**Mechanical verification + automatic rollback.** After every change, the script ran training for exactly 5 minutes and measured the metric. If it improved: `git commit` and keep. If it worsened: `git revert` and try something else. No human judgment required, no manual cleanup.
+```
+Metric: val_bpb       # validation bits per byte
+Direction: minimize   # lower is better
+```
 
-The result was a system where **every night compounded**. Each iteration built on the best previous state. Failures were automatically forgotten. Successes were permanently recorded in git history.
+Not "model quality." Not "training stability." One number. Every decision collapses to: did this change lower `val_bpb`?
 
-## Core Concepts
+**2. Constrained scope.**
 
-**Autonomous research loop**: A self-running cycle of modify → verify → keep/discard → repeat, requiring no human intervention between iterations.
+```
+Scope: train.py only   # agent cannot touch anything else
+```
 
-**Mechanical metric**: A number that can be computed automatically from a defined procedure, with a clear direction (higher or lower is better). Examples: `val_bpb`, `median_time_s`, `test_coverage_pct`.
+If the metric worsens, the cause must be in `train.py`. Nothing else. Failures are isolatable.
 
-**Keep policy**: The rule that decides whether to keep or discard a change. The most common policy: `score_improvement` (keep if the new score is better than the previous best).
+**3. Mechanical verification + automatic rollback.**
 
-**Automatic rollback**: When a change worsens the metric, `git revert` automatically restores the previous state. The failed experiment is preserved in git history but doesn't affect the codebase.
+```bash
+python evaluate.py   # run for exactly 5 minutes
+git commit           # commit first
+# if score worsened:
+git revert HEAD      # automatic, no manual cleanup
+```
 
-**Bounded vs. unbounded mode**: A bounded loop runs exactly N iterations then stops. An unbounded loop runs until the target metric is achieved or the user interrupts.
+The result: a system where **every night compounds**. Failures are automatically forgotten. Successes are permanently recorded in git.
 
-**Search space**: The set of files and parameters the agent is allowed to modify. Constraining this is essential — a narrow search space means failures are isolatable and the agent doesn't break things it shouldn't touch.
+## Key Concepts
 
-## Why This Generalizes
+| Concept | Meaning |
+|---------|---------|
+| Autonomous research loop | modify → verify → keep/discard → repeat, no human between iterations |
+| Mechanical metric | a number computed automatically, with a clear direction (higher/lower is better) |
+| Keep policy | rule for deciding keep vs. discard; most common: `score_improvement` |
+| Automatic rollback | `git revert` when score worsens — failed experiment stays in history but not in code |
+| Bounded vs. unbounded | bounded: exactly N iterations; unbounded: run until target or user interrupt |
 
-The principles Karpathy used for ML training apply to any domain where you can:
+## Try It
 
-1. Define a single number that measures progress
-2. Constrain what can be changed
-3. Verify mechanically whether a change was an improvement
-4. Automatically revert changes that weren't
+Run the code example to see the efficiency gap between random guessing and systematic search:
 
-This covers an enormous range of problems:
+```sh
+cd docs/zh/lectures/lecture-01-why-manual-iteration-fails/code
+python manual_vs_systematic.py
+```
 
-- **Code performance**: `median_time_s` on a benchmark. Modify the algorithm. Verify by running it. Revert if slower.
-- **Test coverage**: `coverage_pct`. Modify test files. Verify with `pytest --cov`. Revert if coverage drops.
-- **Prompt quality**: `llm_judge_score` (1–10, averaged over 5 samples). Modify the prompt. Verify with an LLM call. Revert if score drops.
-- **Literature coverage**: `papers_found`. Modify the search strategy. Verify by counting matched papers. Keep if more papers found.
+Questions to think about:
 
-The common pattern: **constraint + metric + loop = compounding gains**.
-
-## The Case Study: 100 Experiments per Night
-
-Here's what Karpathy's script actually achieved. Starting from a baseline model with `val_bpb = 1.85`:
-
-| Night | Best val_bpb | Experiments Run | Key Discovery |
-|-------|-------------|-----------------|---------------|
-| 1 | 1.72 | 23 | Larger embedding layer |
-| 2 | 1.61 | 31 | Attention head configuration |
-| 3 | 1.54 | 28 | Learning rate schedule |
-| 4 | 1.49 | 19 | Architecture depth |
-
-In four nights of unattended runs, the agent achieved what would have taken weeks of manual experimentation. Each night's best result became the next night's baseline. The loop compounded.
-
-## What You Need to Run Your Own Loop
-
-Before starting `/autoresearch`, you need three things:
-
-1. **A goal**: "Reduce sort function time to under 0.5s on 1M integers"
-2. **A metric**: `median_time_s` (minimize, target `< 0.5`)
-3. **An evaluator**: a script that outputs `{"pass": bool, "score": number}`
-
-That's it. The `/autoresearch:plan` wizard walks you through defining all three in about 2 minutes.
-
-## Key Takeaways
-
-- Manual iteration is bottlenecked by human attention — agents remove that bottleneck entirely
-- Three principles unlock autonomous research: one metric, constrained scope, mechanical verification
-- Automatic rollback means failures are free — the agent tries boldly because bad changes cost nothing
-- Any domain with a measurable metric can use the autoresearch loop
-- The compound effect is the real power: each night builds on the previous night's best result
+1. How much better is the grid strategy than the random strategy? Does the gap grow or shrink with a smaller budget?
+2. Change `SEED = 42` to `SEED = 1` — the random strategy changes, but does the grid strategy?
+3. In your own research project, what would "the metric" be? Can it be computed by one line of Python?
+4. Try writing your first `research.md` — just three lines: goal, metric, direction.
 
 ---
 

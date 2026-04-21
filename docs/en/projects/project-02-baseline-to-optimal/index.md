@@ -3,8 +3,8 @@
 [中文版本 →](/zh/projects/project-02-baseline-to-optimal/)
 
 **Paired with**: [Lecture 03](/en/lectures/lecture-03-five-stage-loop-internals/) + [Lecture 04](/en/lectures/lecture-04-what-to-do-when-stuck/)  
-**Starter code**: [projects/project-02/starter/](https://github.com/zhimin-z/learn-auto-research/tree/main/projects/project-02/starter/)  
-**Solution**: [projects/project-02/solution/](https://github.com/zhimin-z/learn-auto-research/tree/main/projects/project-02/solution/)
+**Starter code**: [projects/project-02/starter/](https://github.com/AI4Scientist/learn-auto-research/tree/main/projects/project-02/starter/)  
+**Solution**: [projects/project-02/solution/](https://github.com/AI4Scientist/learn-auto-research/tree/main/projects/project-02/solution/)
 
 ---
 

@@ -1,56 +1,59 @@
 /* ===== Learn AutoResearch — Custom VitePress Styles ===== */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap');
+/* Color palette: Terracotta + Olive + Warm Monochrome (CAIS design system) */
 
 /* ---------- CSS Variables (Light) ---------- */
 :root {
-  --vp-c-bg: #F8FAFF;
-  --vp-c-bg-alt: #EFF6FF;
-  --vp-c-bg-elv: #FFFFFF;
-  --vp-c-bg-soft: #EFF6FF;
+  /* Warm monochrome foundation */
+  --vp-c-bg:       #FAFAF8;   /* seasalt */
+  --vp-c-bg-alt:   #e8e7e7;   /* platinum */
+  --vp-c-bg-elv:   #FAFAF8;
+  --vp-c-bg-soft:  #e8e7e7;
 
-  --vp-c-text-1: #1E1E2E;
-  --vp-c-text-2: #3C4A6B;
-  --vp-c-text-3: #6B7A99;
+  --vp-c-text-1: #252523;   /* eerie-black */
+  --vp-c-text-2: #5E5D59;   /* davys-gray */
+  --vp-c-text-3: #9C9B97;
 
-  /* Brand - Blue */
-  --vp-c-brand-1: #2563EB;
-  --vp-c-brand-2: #1D4ED8;
-  --vp-c-brand-3: #1E40AF;
-  --vp-c-brand-soft: rgba(37, 99, 235, 0.08);
+  /* Brand — terracotta */
+  --vp-c-brand-1: #B8593E;   /* terracotta-deep */
+  --vp-c-brand-2: #C4735A;   /* terracotta-medium */
+  --vp-c-brand-3: #D89380;   /* terracotta-light */
+  --vp-c-brand-soft: rgba(184, 89, 62, 0.08);
+
+  /* Dividers */
+  --vp-c-divider: #C7C6C5;   /* silver */
 
   /* Sidebar */
   --vp-sidebar-width: 296px;
-  --vp-sidebar-bg-color: #EFF6FF;
-  --vp-c-divider: rgba(0, 0, 0, 0.08);
+  --vp-sidebar-bg-color: #e8e7e7;   /* platinum */
 
-  /* Layout */
-  --vp-nav-bg-color: #F8FAFF;
+  /* Nav */
+  --vp-nav-bg-color: #FAFAF8;
   --vp-layout-max-width: 1376px;
 
-  /* Typography */
-  --vp-font-family-base: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --vp-font-family-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* Typography — system stack */
+  --vp-font-family-base: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans', Arial, sans-serif;
+  --vp-font-family-mono: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
 /* ---------- Dark mode ---------- */
 .dark {
-  --vp-c-bg: #0F172A;
-  --vp-c-bg-alt: #0B1120;
-  --vp-c-bg-elv: #1E293B;
-  --vp-c-bg-soft: #0B1120;
+  --vp-c-bg:     #252523;   /* eerie-black */
+  --vp-c-bg-alt: #1e1d1b;
+  --vp-c-bg-elv: #2f2e2b;
+  --vp-c-bg-soft:#1e1d1b;
 
-  --vp-c-text-1: #E2E8F0;
-  --vp-c-text-2: #94A3B8;
-  --vp-c-text-3: #64748B;
+  --vp-c-text-1: #e8e7e7;   /* platinum */
+  --vp-c-text-2: #C7C6C5;   /* silver */
+  --vp-c-text-3: #9C9B97;
 
-  --vp-c-brand-1: #60A5FA;
-  --vp-c-brand-2: #3B82F6;
-  --vp-c-brand-3: #2563EB;
-  --vp-c-brand-soft: rgba(96, 165, 250, 0.12);
+  --vp-c-brand-1: #D89380;   /* terracotta-light — lighter on dark */
+  --vp-c-brand-2: #C4735A;
+  --vp-c-brand-3: #B8593E;
+  --vp-c-brand-soft: rgba(216, 147, 128, 0.12);
 
-  --vp-sidebar-bg-color: #0B1120;
-  --vp-nav-bg-color: #0F172A;
-  --vp-c-divider: rgba(255, 255, 255, 0.08);
+  --vp-c-divider: #5E5D59;   /* davys-gray */
+  --vp-sidebar-bg-color: #1e1d1b;
+  --vp-nav-bg-color: #252523;
 }
 
 /* ---------- Global typography ---------- */
@@ -60,22 +63,18 @@
 }
 
 .vp-doc h1 {
-  font-family: 'Newsreader', serif;
-  font-size: 3.5rem;
-  font-weight: 400;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  font-size: 2.5rem;
+  font-weight: 500;
+  line-height: 1.2;
   margin-top: 2rem;
   margin-bottom: 1.5rem;
   color: var(--vp-c-text-1);
 }
 
 .vp-doc h2 {
-  font-family: 'Newsreader', serif;
   font-size: 2rem;
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.2;
-  letter-spacing: -0.01em;
   margin-top: 2.5rem;
   padding-bottom: 0.4rem;
   border-bottom: 1px solid var(--vp-c-divider);
@@ -91,7 +90,7 @@
 .vp-doc a {
   color: var(--vp-c-brand-1);
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color 200ms linear;
 }
 
 .vp-doc a:hover {
@@ -120,17 +119,17 @@
 }
 
 .vp-doc div[class*='language-'] {
-  border-radius: 12px;
+  border-radius: 8px;
   margin: 16px 0;
   border: 1px solid var(--vp-c-divider);
-  background-color: var(--vp-c-bg-elv);
+  background-color: var(--vp-c-bg-alt);
 }
 
 .vp-doc :not(pre) > code {
   background: var(--vp-c-bg-alt);
   color: var(--vp-c-text-1);
   padding: 3px 6px;
-  border-radius: 6px;
+  border-radius: 4px;
   border: 1px solid var(--vp-c-divider);
   font-size: 0.88em;
 }
@@ -153,7 +152,7 @@
   border-collapse: collapse;
   width: 100%;
   margin: 16px 0;
-  border-radius: 8px;
+  border-radius: 4px;
   overflow: hidden;
 }
 
@@ -163,8 +162,13 @@
 }
 
 .vp-doc th {
-  background: var(--vp-c-brand-soft);
-  font-weight: 600;
+  background: rgba(149, 108, 88, 0.08);   /* olive-clay at 8% */
+  font-weight: 700;
+  color: var(--vp-c-text-1);
+}
+
+.vp-doc tr:hover td {
+  background: rgba(138, 158, 120, 0.05);  /* olive-sage at 5% */
 }
 
 /* ---------- Horizontal rule ---------- */
@@ -193,24 +197,24 @@
 
 /* ---------- Feature cards ---------- */
 .VPFeature {
-  border-radius: 12px !important;
+  border-radius: 4px !important;
   border: 1px solid var(--vp-c-divider) !important;
-  transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s !important;
+  background-color: var(--vp-c-bg) !important;
+  transition: border-color 200ms linear !important;
   padding: 20px 24px !important;
 }
 
 .VPFeature:hover {
   border-color: var(--vp-c-brand-1) !important;
-  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.1) !important;
-  transform: translateY(-2px) !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 /* ---------- Navigation ---------- */
 .VPNavBarTitle {
-  font-family: 'Newsreader', ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  font-size: 1.45rem;
-  font-weight: 500;
-  letter-spacing: -0.01em;
+  font-family: var(--vp-font-family-base);
+  font-size: 1.1rem;
+  font-weight: 600;
   color: var(--vp-c-text-1);
 }
 
@@ -222,7 +226,8 @@
   margin: 0 12px;
   border-radius: 0 !important;
   background-color: transparent !important;
-  transition: all 0.2s ease;
+  transition: color 200ms linear;
+  border-bottom: 2px solid transparent;
   height: 100%;
   display: flex;
   align-items: center;
@@ -230,58 +235,57 @@
 
 .VPNavBarMenuLink:hover {
   color: var(--vp-c-text-1) !important;
+  border-bottom-color: var(--vp-c-brand-1);
 }
 
 .VPNavBarMenuLink.active {
   color: var(--vp-c-text-1) !important;
+  border-bottom-color: var(--vp-c-brand-1);
 }
 
-.VPNavBarMenuLink.active::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background-color: var(--vp-c-brand-1);
-}
-
-/* Try AutoResearch button */
-.VPNavBarMenuLink[href*="uditgoenka/autoresearch"] {
+/* autoresearch button */
+.VPNavBarMenuLink[href*="karpathy/autoresearch"] {
   background-color: var(--vp-c-brand-1) !important;
-  color: #FFFFFF !important;
-  border-radius: 20px !important;
-  padding: 0 16px !important;
+  color: #FAFAF8 !important;
+  border-radius: 4px !important;
+  border-bottom: none !important;
+  padding: 6px 16px !important;
   margin: 0 4px 0 12px !important;
-  height: 36px !important;
-  display: flex !important;
-  align-items: center;
+  display: inline-flex !important;
+  align-items: center !important;
+  align-self: center !important;
+  line-height: 1.2 !important;
+  height: auto !important;
+  position: relative !important;
+  top: 0 !important;
+  transition: background-color 200ms linear !important;
 }
 
-.VPNavBarMenuLink[href*="uditgoenka/autoresearch"]:hover {
+.VPNavBarMenuLink[href*="karpathy/autoresearch"]:hover {
   background-color: var(--vp-c-brand-2) !important;
+  color: #FAFAF8 !important;
 }
 
-.VPNavBarMenuLink[href*="uditgoenka/autoresearch"]::after {
+.VPNavBarMenuLink[href*="karpathy/autoresearch"]::after {
   display: none !important;
 }
 
 /* GitHub button */
 .VPNavBarSocialLink {
-  background-color: #1A1A1A !important;
-  color: #FFFFFF !important;
-  border-radius: 20px;
+  background-color: #252523 !important;
+  color: #FAFAF8 !important;
+  border-radius: 4px;
   padding: 0 16px 0 12px !important;
   height: 32px !important;
   width: auto !important;
   display: flex !important;
   align-items: center;
   gap: 6px;
-  transition: background-color 0.2s ease;
+  transition: background-color 200ms linear;
 }
 
 .VPNavBarSocialLink:hover {
-  background-color: #333333 !important;
+  background-color: #5E5D59 !important;
 }
 
 .VPNavBarSocialLink::after {
@@ -293,8 +297,8 @@
 }
 
 .dark .VPNavBarSocialLink {
-  background-color: #E5E5E5 !important;
-  color: #1A1A1A !important;
+  background-color: #e8e7e7 !important;
+  color: #252523 !important;
 }
 
 /* ---------- Sidebar ---------- */
@@ -306,16 +310,17 @@
 }
 
 .VPSidebar .VPSidebarItem .item .link {
-  border-radius: 8px !important;
+  border-radius: 4px !important;
   color: var(--vp-c-text-2) !important;
   font-size: 0.9rem;
   padding: 8px 12px !important;
   margin: 2px 0;
+  transition: color 200ms linear, background-color 200ms linear;
 }
 
 .VPSidebar .VPSidebarItem .item .link:hover {
   color: var(--vp-c-text-1) !important;
-  background-color: rgba(37, 99, 235, 0.06) !important;
+  background-color: rgba(149, 108, 88, 0.08) !important;  /* clay at 8% */
 }
 
 .VPSidebar .VPSidebarItem.is-active > .item > .link {
@@ -334,10 +339,10 @@
 
 .card {
   border: 1px solid var(--vp-c-divider);
-  border-radius: 12px;
+  border-radius: 4px;
   padding: 20px;
-  background-color: var(--vp-c-bg-elv);
-  transition: all 0.2s ease;
+  background-color: var(--vp-c-bg);
+  transition: border-color 200ms linear;
   text-decoration: none !important;
   display: flex;
   flex-direction: column;
@@ -345,8 +350,8 @@
 
 .card:hover {
   border-color: var(--vp-c-brand-1);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
-  transform: translateY(-1px);
+  box-shadow: none;
+  transform: none;
 }
 
 .card h3 {

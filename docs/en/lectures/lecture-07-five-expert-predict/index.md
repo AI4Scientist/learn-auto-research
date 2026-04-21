@@ -1,128 +1,114 @@
 # Lecture 07 — Five-Expert Prediction
 
-[中文版本 →](/zh/lectures/lecture-07-five-expert-predict/)
+`L01 > L02 > L03 > L04 > L05 > L06 | [ L07 ] L08 > L09 > L10 > L11 > L12`
+
+> *"One person's blind spot is another person's obvious problem."* — Five independent cold-start analyses catch what any single perspective misses.
+>
+> **Core idea**: How `/autoresearch:predict` runs five expert personas independently before any action, detects minority views, and surfaces the risks that consensus would bury.
 
 Code examples: [code/](./code/)  
 Practice project: [Project 04 — Architecture Decision Debate](/en/projects/project-04-architecture-debate/)
 
+[中文版本 →](/zh/lectures/lecture-07-five-expert-predict/)
+
 ---
 
-Before you debug, fix, or ship — `/autoresearch:predict` gives you five expert perspectives in two minutes. This is pre-flight analysis: understand the risk landscape before committing to action.
+## The Problem
 
-## Why Single-Perspective Analysis Fails
+Most pre-action analysis suffers from **perspective monoculture**: one person evaluates a change from their habitual angle. The security-focused engineer sees security risks. The performance engineer sees latency. But they rarely look at the same change at the same time.
 
-Most pre-action analysis suffers from **perspective monoculture**: one person (or one AI persona) evaluates a change from their habitual angle. The security-focused engineer sees security risks. The performance engineer sees latency risks. The reliability engineer worries about edge cases. But they rarely all look at the same change at the same time.
+The result: architectural decisions approved without asking the security question. Performance optimizations that introduce reliability regressions no one predicted. Debugging sessions that miss the infrastructure angle entirely.
 
-The result: architectural decisions approved by developers who never asked the security question. Performance optimizations that introduce reliability regressions no one predicted. Debugging sessions that ignore the infrastructure angle and waste days on the application layer.
-
-`/autoresearch:predict` runs five independent expert analyses simultaneously, then forces them to debate and converge on a prioritized finding list.
-
-## The Five Personas
-
-Each persona has a specific analytical lens and a set of questions they always ask:
-
-**Architect** — system design perspective:
-- Does this change fit the existing architecture?
-- What coupling does it introduce?
-- What does it make harder to change in the future?
-- What are the scaling implications?
-
-**Security Analyst** — threat modeling perspective:
-- What new attack surfaces does this introduce?
-- What data could be exposed or corrupted?
-- What trust boundaries are being crossed?
-- What's the blast radius if this is exploited?
-
-**Performance Engineer** — runtime behavior perspective:
-- What is the computational complexity?
-- What are the memory allocation patterns?
-- Where are the potential bottlenecks?
-- What happens at 10× the current load?
-
-**Reliability Engineer** — failure mode perspective:
-- What can go wrong at runtime?
-- How does this fail under partial failure of dependencies?
-- Is there a graceful degradation path?
-- What's the blast radius if this crashes?
-
-**Devil's Advocate** — contrarian perspective:
-- What assumption in this approach is most likely to be wrong?
-- What simpler alternative hasn't been considered?
-- What is the biggest risk that the other perspectives are downplaying?
-- If this fails, what will the post-mortem say was the root cause?
-
-## Anti-Herd Detection
-
-The most dangerous failure mode in multi-agent analysis is convergence without genuine debate. If all five agents see the same code and read each other's analyses before forming their own, they will herd toward a consensus that reflects the first agent's framing.
-
-`/autoresearch:predict` prevents this with **independent cold-start analysis**: each persona analyzes the code without seeing the other personas' output. Only after all five have completed their independent analysis does the synthesis phase begin.
-
-The synthesis phase explicitly looks for dissent:
-- Which findings do 4/5 agree on? (high confidence)
-- Which findings does only 1/5 raise? (minority view — worth explicit investigation)
-- Where do two personas directly contradict each other? (unresolved tension — flag for human decision)
-
-Minority views are especially valuable. The one Security Analyst who raises an injection risk while four others focus on performance has information the consensus is missing.
-
-## Output Structure
-
-```markdown
-# Predict Analysis: [scope]
-
-## Consensus Findings (4-5/5 agree)
-1. [finding] — confidence: HIGH
-   Evidence: [specific file:line references]
-   Recommendation: [specific action]
-
-## Notable Dissent (1-2/5 raise)
-- [Persona X only]: [finding]
-  Reason to investigate: [why this minority view matters]
-
-## Unresolved Tensions
-- [Persona A] says X; [Persona B] says ¬X
-  Decision required: [what needs a human call]
-
-## Recommended Actions (prioritized)
-1. [highest risk finding + action]
-2. ...
-```
-
-## Chaining Predict with Other Commands
-
-Predict is most powerful as a pre-flight step before action:
+## The Solution
 
 ```
+Code change or decision
+         |
+    ─────┴─────────────────────────────────
+    |         |         |         |        |
+Architect  Security  Performance  Reliability  Devil's
+           Analyst   Engineer     Engineer     Advocate
+    |         |         |         |        |
+    └─────┬──────────────────────────────────
+         |
+    (cold start — each analyzes without seeing others)
+         |
+    Synthesis: 4-5 agree = HIGH confidence
+               1/5 raises = minority view ← most valuable
+               A vs B contradict = human decision needed
+         |
+    Prioritized findings list
+```
+
+## How It Works
+
+**1. Five independent cold-start analyses.**
+
+Each persona analyzes the code without seeing any other persona's output. This prevents herding — the most dangerous failure mode in multi-agent analysis.
+
+| Persona | Their core question |
+|---|---|
+| **Architect** | Does this fit the architecture? What coupling does it introduce? |
+| **Security Analyst** | What new attack surfaces? What trust boundaries are crossed? |
+| **Performance Engineer** | What's the complexity? What happens at 10× load? |
+| **Reliability Engineer** | How does this fail under partial dependency failure? |
+| **Devil's Advocate** | What assumption here is most likely to be wrong? |
+
+**2. Anti-herd detection in synthesis.**
+
+After all five complete their independent analyses, synthesis looks for:
+- **4-5/5 agree** → high confidence finding
+- **1/5 raises only** → minority view (highest value — the consensus is missing this)
+- **A says X, B says ¬X** → unresolved tension → flag for human decision
+
+Minority views are the most important output. The one Security Analyst who raises an injection risk while four others focus on performance has information the consensus is burying.
+
+**3. Chain with action commands.**
+
+```bash
 /autoresearch:predict --chain debug
 ```
-Output: pre-ranked hypotheses for the debug loop. Instead of the agent guessing where to start, it begins with the Security Analyst's findings, then Reliability Engineer's, etc.
+Output: pre-ranked hypotheses for the debug loop. Instead of guessing where to start, the loop begins with the Security Analyst's findings, then Reliability Engineer's.
 
-```
+```bash
 /autoresearch:predict --chain security
-```
-Output: multi-persona red team analysis fed directly into the security audit.
-
-```
 /autoresearch:predict --chain scenario,debug,fix
 ```
-Output: full quality pipeline — explore scenarios, investigate bugs, fix errors.
 
-## When to Use Predict
+**4. When to use predict.**
 
-| Situation | Value |
-|-----------|-------|
-| Before a major refactor | Catch architectural risks before writing code |
+| Situation | What predict catches |
+|---|---|
+| Before a major refactor | Architectural risks before writing code |
 | Before merging a large PR | Independent risk analysis from all angles |
-| Before a production deployment | Reliability and performance pre-flight |
-| When debugging a mysterious failure | Pre-ranked hypotheses save investigation time |
-| Before a security review | Pre-identify likely findings before formal audit |
+| Before production deploy | Reliability and performance pre-flight |
+| Debugging a mysterious failure | Pre-ranked hypotheses to start from |
+| Before a security review | Pre-identify likely findings |
 
-## Key Takeaways
+## What Changed
 
-- Five independent cold-start analyses prevent herding toward a flawed consensus
-- Each persona has a specific analytical lens — no overlap, no gaps
-- Minority views are the most valuable output — they catch what the consensus misses
-- Unresolved tensions require human decisions — flag them explicitly
-- Chain with `--chain debug/security/fix` to feed findings directly into action commands
+| Single-perspective review | Five-expert predict |
+|---|---|
+| Security question skipped | Security Analyst always asks it |
+| Performance regressions missed | Performance Engineer always checks complexity |
+| Consensus buries minority views | Synthesis explicitly surfaces dissent |
+| Tension stays implicit | Unresolved tensions flagged for human decision |
+
+## Try It
+
+Run the five-expert predictor:
+
+```sh
+cd docs/en/lectures/lecture-07-five-expert-predict/code
+python five_expert_predict.py
+```
+
+Questions to think about:
+
+1. In the output, which finding had the highest agreement count? Which had the lowest?
+2. Find a minority view (only 1/5 raised it) — why might this be the most important finding?
+3. If the Security Analyst and Performance Engineer directly contradict each other, what does the synthesis output say? What should a human do with this?
+4. Think of a recent architectural decision — which of the five personas would have raised the risk that turned out to matter most?
 
 ---
 

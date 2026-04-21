@@ -1,68 +1,70 @@
 # Lecture 08 — Adversarial Refinement
 
-[中文版本 →](/zh/lectures/lecture-08-adversarial-refinement/)
+`L01 > L02 > L03 > L04 > L05 > L06 | L07 > [ L08 ] L09 > L10 > L11 > L12`
+
+> *"When there's no metric, the blind judge panel is the metric."* — Blind judging removes authority bias and anchoring. Pure content wins.
+>
+> **Core idea**: How `/autoresearch:reason` extends the loop to subjective decisions — adversarial critique, cold-start agents, and a blind judge panel as the fitness function.
 
 Code examples: [code/](./code/)  
 Practice project: [Project 04 — Architecture Decision Debate](/en/projects/project-04-architecture-debate/)
 
+[中文版本 →](/zh/lectures/lecture-08-adversarial-refinement/)
+
 ---
 
-The autoresearch loop works when you have a mechanical metric. But what about decisions where no objective metric exists? Architecture choices, product strategy, content quality, design trade-offs — these are irreducibly subjective.
+## The Problem
 
-`/autoresearch:reason` extends the autoresearch loop to subjective domains by using a **blind judge panel** as the fitness function. The panel IS the metric: `val_bpb` for decisions.
+The autoresearch loop works when you have a mechanical metric. But architecture choices, product strategy, content quality, and design trade-offs are irreducibly subjective — there's no `evaluate.py` to run.
 
-## The Problem with Subjective Decisions
+Without a mechanism, three failure modes appear:
 
-When there's no metric, three failure modes emerge:
+**Premature convergence**: The first good-sounding argument wins. No one challenges it rigorously because challenging feels difficult.
 
-**Premature convergence**: The first good-sounding argument wins. No one challenges it rigorously because challenging feels like being difficult.
+**Authority bias**: The most senior person's opinion wins. Technical merit gets crowded out by hierarchy.
 
-**Authority bias**: The most senior person's opinion wins. Technical merit and evidence get crowded out by hierarchy.
+**False consensus**: Everyone says they agree, but the underlying tension resurfaces in implementation.
 
-**False consensus**: Everyone says they agree, but they haven't actually resolved the underlying tension. The decision gets made, the tension resurfaces in implementation.
+## The Solution
 
-The scientific method works for objective domains because experiments falsify hypotheses. For subjective domains, we need a different mechanism.
+```
+Author-A generates candidate A
+        |
+Critic attacks A (cold start — hasn't seen the generation)
+        |
+Author-B responds (cold start — sees A + critique only)
+  generates improved candidate B
+        |
+Synthesizer merges strongest elements → candidate C
+        |
+Blind judge panel (3-7 judges, odd number preferred):
+  "Which is better, X or Y?" ← no labels, no history
+        |
+  C wins? → C becomes new A → loop
+  A wins? → A becomes new A → loop
+        |
+  N consecutive wins = convergence → write handoff.json
+```
 
-## The Adversarial Refinement Loop
+**Key invariant**: Every agent is a fresh cold-start invocation. No shared session. No agent sees the history of the debate. This prevents coherence bias — agents changing their assessment to match what they said earlier.
 
-The loop has six steps:
+## How It Works
 
-**1. Generate-A**: An agent generates candidate A — an answer, proposal, architecture design, or argument.
+**1. Cold-start agents prevent herding.**
 
-**2. Critic attacks**: A separate critic agent (cold start, hasn't seen the generation process) attacks candidate A as hard as possible. Strawman attacks, counterexamples, edge cases, alternative framings.
+If agents read each other's outputs before forming their own, they herd toward a consensus that reflects the first agent's framing. Cold start means each agent forms an independent position before any synthesis happens.
 
-**3. Author-B responds**: A third agent (cold start, sees only A and the critique) generates candidate B — an improved version that addresses the critique.
+**2. Blind judging removes authority bias.**
 
-**4. Synthesize**: A synthesizer agent merges the strongest elements of A and B into candidate C.
+Sighted judging is unreliable. When judges know which option is "the new proposal" vs "the current approach," they bring in loss aversion and social pressure. Blind judges see only X and Y. If Y wins 3 times in a row across different judges, it's genuinely better by the only measure that matters: human judgment.
 
-**5. Blind judge panel**: N judges (3–7, odd preferred) evaluate C without seeing labels. They don't know if they're judging A, B, or C — just two unmarked candidates X and Y. They pick the better one.
+**3. Convergence stops the loop.**
 
-**6. Update and repeat**: The winning candidate becomes the new A. Loop until N consecutive wins (convergence) or `max_iterations` exhausted.
+```bash
+/autoresearch:reason --convergence 3  # default: 3 consecutive wins
+```
 
-**Key invariant**: Every agent is a cold-start fresh invocation. No agent sees the history of the debate. No shared session. This prevents coherence bias — agents changing their assessment to match what they said before.
-
-## Why Blind Judging Works
-
-Sighted judging is unreliable. When judges know which option is "the new proposal" vs "the current approach," they bring in anchoring bias, loss aversion, and social pressure. The new proposal has to overcome not just its own weaknesses but also the psychological weight of disrupting the status quo.
-
-Blind judging removes all of this. The judge sees only X and Y. They pick the better one based purely on the content. If Y wins 3 times in a row across different judges, it's genuinely better by the only measure that matters: human judgment.
-
-## Domains and Use Cases
-
-| Domain | Example task | Judge criteria |
-|--------|-------------|----------------|
-| `software` | "Event sourcing vs. CQRS for order management" | Scalability, maintainability, operational complexity |
-| `product` | "Freemium vs. trial vs. open core pricing" | Market fit, conversion, competitive positioning |
-| `business` | "Build vs. buy decision for auth system" | Cost, time-to-market, control, risk |
-| `security` | "Defense-in-depth strategy for API" | Coverage, practicality, residual risk |
-| `research` | "Hypothesis A vs. Hypothesis B for experiment" | Testability, expected information gain, cost |
-| `content` | "Landing page copy variant A vs. B" | Clarity, persuasion, CTA effectiveness |
-
-## Convergence and Handoff
-
-The loop converges when one candidate wins `--convergence N` (default: 3) consecutive rounds. At convergence, the loop stops and generates `handoff.json` — a structured summary of the winning position with supporting evidence.
-
-`handoff.json` is designed to be read by other commands:
+At convergence, the loop writes `handoff.json`:
 
 ```json
 {
@@ -75,24 +77,52 @@ The loop converges when one candidate wins `--convergence N` (default: 3) consec
 }
 ```
 
-Chain: `reason → plan` — converge on the architecture decision, then scaffold a research project to validate the winning approach empirically.
+**4. Where to use it.**
 
-## Chain Patterns
+| Domain | Example task |
+|---|---|
+| `software` | Event sourcing vs. CQRS for order management |
+| `product` | Freemium vs. trial vs. open core pricing |
+| `business` | Build vs. buy decision for auth system |
+| `security` | Defense-in-depth strategy for API |
+| `research` | Hypothesis A vs. B — which to run first |
+| `content` | Landing page copy variant A vs. B |
+
+**5. Chain patterns.**
 
 ```
-reason → predict    Converge on a position, then stress-test with 5-expert analysis
-reason → plan       Converge, then scaffold an autoresearch project to validate empirically
-reason → scenario   Converge, then explore edge cases of the winning decision
+reason → predict    Converge on position → stress-test with 5-expert analysis
+reason → plan       Converge → scaffold autoresearch project to validate empirically
+reason → scenario   Converge → explore edge cases of the winning decision
 ```
 
-## Key Takeaways
+The most powerful chain for architecture decisions: `reason → plan → autoresearch` — converge on the decision, then validate it empirically with a research loop.
 
-- When no metric exists, the blind judge panel IS the metric
-- Cold-start agents prevent coherence bias and herding
-- Blind judging removes authority bias and anchoring — pure content wins
-- Convergence (N consecutive wins) is the stopping condition
-- `handoff.json` chains the output to any downstream command
-- For architecture decisions specifically, chain `reason → plan → autoresearch` to validate empirically
+## What Changed
+
+| Subjective decision without structure | Adversarial refinement |
+|---|---|
+| First good argument wins | Critic attacks every candidate before it advances |
+| Authority bias decides | Blind judges see only content, not labels |
+| Consensus is false | Convergence requires N consecutive wins, not one vote |
+| Decision is not documented | `handoff.json` captures winning arguments + dissent |
+
+## Try It
+
+Run the debate tracker and judge aggregator:
+
+```sh
+cd docs/en/lectures/lecture-08-adversarial-refinement/code
+python debate_tracker.py
+python judge_aggregator.py
+```
+
+Questions to think about:
+
+1. After running `judge_aggregator.py`, what was the `judge_agreement` score? What does a score below 0.6 mean?
+2. In the loop, the critic's job is to attack the candidate "as hard as possible." Why is a weak critic worse than no critic?
+3. Why does the loop use a blind judge panel instead of having the same agents vote?
+4. Think of a technical decision you've made recently — write three rounds of the adversarial loop: what would Critic say about your original choice?
 
 ---
 

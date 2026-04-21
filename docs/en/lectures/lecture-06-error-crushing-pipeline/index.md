@@ -1,152 +1,137 @@
 # Lecture 06 — Error-Crushing Pipeline
 
-[中文版本 →](/zh/lectures/lecture-06-error-crushing-pipeline/)
+`L01 > L02 > L03 > L04 > L05 > [ L06 ] | L07 > L08 > L09 > L10 > L11 > L12`
+
+> *"Fixing one error can reveal three more."* — Errors are not independent. Fix blockers first, verify after every change, guard against regressions.
+>
+> **Core idea**: How `/autoresearch:fix` eliminates a list of errors systematically — cascade-aware ordering, one fix per iteration, automatic regression detection.
 
 Code examples: [code/](./code/)  
 Practice project: [Project 03 — Debug a Real Failure](/en/projects/project-03-debug-real-failure/)
 
+[中文版本 →](/zh/lectures/lecture-06-error-crushing-pipeline/)
+
 ---
 
-`/autoresearch:debug` finds bugs. `/autoresearch:fix` eliminates errors. These are different problems with different strategies.
+## The Problem
 
-Debugging is investigation: you don't know what's wrong. Fixing is repair: you have a list of errors and need to reduce it to zero. The fix loop is optimized for systematic, cascade-aware error elimination.
+Debugging is investigation. Fixing is repair. They're different problems.
 
-## The Cascade Problem
+When a codebase has 23 errors after a large refactor, fixing them is not independent:
+- Fix A can reveal error B that was hidden behind A
+- Fix B can break test C that was previously green
+- Fix C can re-introduce A
 
-When a codebase has multiple errors, fixing them is not independent. Fixing error A can reveal error B that was previously hidden. Fixing error B can break error C that was previously passing. Fixing error C can re-introduce error A.
+Naive approaches fail: fixing in random order wastes time, fixing multiple errors at once makes regressions unattributable, not running the full suite after each fix means you don't know the current state.
 
-Naive approaches fail here:
-- Fixing errors in arbitrary order wastes time on errors that will be fixed as side effects
-- Fixing multiple errors at once makes regressions unattributable
-- Not running the full error suite after each fix means you don't know the current state
-
-`/autoresearch:fix` handles this with a cascade-aware strategy: fix ONE error per iteration, prioritize blockers first, verify after each fix, guard against regressions.
-
-## How the Fix Loop Works
-
-**Setup**: The agent runs the verify command to establish a baseline error count and categorize all errors:
+## The Solution
 
 ```
-Baseline: 23 errors
-  - Build errors: 3 (BLOCKER — nothing else can run)
-  - Type errors: 8
-  - Test failures: 9
-  - Lint errors: 3
+Run verify → get baseline error count and categorize:
+  Build errors: 3   ← BLOCKER — fix these first
+  Type errors:  8
+  Test failures: 9
+  Lint errors:  3
+
+Each iteration:
+  pick highest-priority unfixed error
+        ↓
+  ONE change to fix ONE error
+        ↓
+  git commit
+        ↓
+  run verify → did error count decrease?
+        ↓
+  run guard → did anything else break?
+        ↓
+  keep or revert
+        ↓
+  (loop until error count = 0)
 ```
 
-**Priority order**: Build errors → type errors → test failures → lint errors. Blockers first because downstream errors may disappear when blockers are fixed.
+The loop stops automatically at zero errors — even in unbounded mode.
 
-**Each iteration**:
-1. Run verify: get current error list
-2. Pick the highest-priority unfixed error
-3. Formulate a specific hypothesis: "This error is caused by X, fix is Y"
-4. Make ONE change to fix ONE error
-5. `git commit`
-6. Run verify: count errors. Did the count decrease?
-7. Run guard: did anything else break?
-8. If both pass: keep. If guard fails: attempt fix-of-fix (max 2 tries), else revert.
-9. Log: which error was fixed, what changed, new error count
-10. **Automatically stop when error count reaches 0**
+## How It Works
 
-The loop terminates on zero errors even in unbounded mode. You never need to specify `max_iterations` for a fix run if you trust the error suite.
-
-## The Guard in Fix Mode
-
-The guard is especially important in fix mode. When fixing error A, you might accidentally break previously-passing test B. The guard catches this.
+**1. Priority order: blockers first.**
 
 ```
-/autoresearch:fix
+Build errors    → nothing else can run until these are fixed
+Type errors     → may hide or cause test failures
+Test failures   → the actual behavior regressions
+Lint errors     → style issues, fix last
+```
+
+Fixing a build error often makes 3 type errors disappear as side effects. Cascade-aware ordering finds this automatically.
+
+**2. One fix per iteration — always.**
+
+This is the same rule as the core loop, applied to error fixing. One change means: if a regression appears, exactly one commit is responsible. You always know what to revert.
+
+**3. The guard prevents regression accumulation.**
+
+```markdown
 Guard: npm test -- --testPathIgnorePatterns="auth.test"
 ```
 
-You can narrow the guard to avoid known-broken tests. The guard protects the green tests while the fix loop repairs the red ones.
+You can narrow the guard to exclude known-broken tests. The guard protects the green tests while the fix loop repairs the red ones. If the guard fails and the fix-of-fix also fails (2 attempts max), the original fix is reverted automatically.
 
-## Error Categories
-
-| Category | Verify command | Priority |
-|----------|---------------|----------|
-| Build errors | `tsc --noEmit` or `cargo build` | 1 (blocker) |
-| Type errors | `tsc --strict` | 2 |
-| Test failures | `pytest` or `npm test` | 3 |
-| Lint errors | `eslint` or `flake8` | 4 |
-| Security issues | `bandit` or `npm audit` | 2 (if severity >= High) |
-
-The agent auto-detects which categories are present. You can filter with `--category`:
+**4. Practical result: post-refactor cleanup.**
 
 ```
-/autoresearch:fix --category test  # only fix test failures
-/autoresearch:fix --category type  # only fix type errors
+Baseline: 23 errors (2 build, 5 type, 12 test, 4 lint)
+
+Iteration 1:  fix build error (import path in auth.ts) → 22 errors
+Iteration 2:  fix build error (import path in user.ts) → 21 errors
+Iteration 3:  fix type error (getUserById return type) → 18 errors  ← 3 disappeared as side effects
+Iteration 4-6: fix remaining type errors → 12 errors
+Iteration 7-15: fix test failures → 4 errors
+Iteration 16:  fix lint errors → 4 errors
+Iteration 17-20: fix remaining test failures → 0 errors
 ```
 
-## Using `--from-debug`
+Zero errors in 20 iterations. The cascade management saved ~8 extra iterations compared to random order.
 
-The most powerful chain is debug → fix:
+**5. Chain with debug: `--from-debug`.**
 
 ```bash
-# Step 1: Find all bugs
+# Step 1: find all bugs
 /autoresearch:debug
 Scope: src/
 Symptom: multiple test failures after refactor
-Iterations: 15
 
-# Step 2: Fix them all
+# Step 2: fix them all
 /autoresearch:fix --from-debug
 ```
 
-`--from-debug` reads `findings.md` from the latest debug session and uses confirmed root causes to prioritize which errors to fix first. This skips the discovery phase and goes straight to repair.
+`--from-debug` reads `findings.md` from the latest debug session and uses confirmed root causes to prioritize. Skips the discovery phase, goes straight to repair.
 
-## Practical Example: Post-Refactor Cleanup
+## What Changed
 
-After a large refactor, a codebase has:
-- 2 build errors (import paths changed)
-- 5 type errors (return types not updated)
-- 12 test failures (test fixtures use old API)
-- 4 lint errors (unused variables from removed code)
+| Manual error fixing | `/autoresearch:fix` |
+|---|---|
+| Fix in random order | Blockers → types → tests → lint |
+| Multiple changes at once | One fix per iteration |
+| Regressions introduced silently | Guard catches regressions after every fix |
+| Loop when done manually | Stops automatically at zero errors |
+| Re-investigate same errors | `fix_log.md` records unfixable errors, prevents infinite loops |
 
-Without autoresearch: a developer spends 2–3 hours manually working through each error, often introducing new ones while fixing others.
+## Try It
 
-With `/autoresearch:fix`:
+Run the error sorter and regression checker:
 
-```
-Iteration 1: Fix build error — update import path in auth.ts → 22 errors
-Iteration 2: Fix build error — update import path in user.ts → 21 errors
-Iteration 3: Fix type error — update return type in getUserById → 18 errors
-  (3 type errors disappeared as side effects)
-Iteration 4-6: Fix remaining type errors → 12 errors
-Iteration 7-15: Fix test failures (8/12 fixed, 4 interdependent)
-Iteration 16: Fix lint errors → 4 errors
-Iteration 17-20: Fix remaining test failures → 0 errors
+```sh
+cd docs/en/lectures/lecture-06-error-crushing-pipeline/code
+python error_sorter.py
+python regression_checker.py
 ```
 
-Zero errors in 20 iterations. The cascade management (fixing in priority order, detecting side-effect fixes) saved approximately 8 extra iterations.
+Questions to think about:
 
-## Regression Prevention
-
-The fix loop can introduce regressions. A type fix might break a test. A test fix might change behavior in a way that affects other tests.
-
-Three mechanisms prevent this:
-
-1. **Guard**: runs the full green test suite after every fix
-2. **One change per iteration**: if a regression occurs, exactly one commit is responsible
-3. **Automatic revert**: if the guard fails and the fix-of-fix also fails, the original fix is reverted. The regression is logged, not introduced.
-
-## When Fix Loop Stops
-
-The loop stops when:
-- Error count reaches 0 (even in unbounded mode) ✓
-- `max_iterations` is exhausted
-- An error is unfixable (logged as SKIP, move on) — after 3 failed attempts per error
-
-Unfixable errors are logged in `fix_log.md` with the reason. This prevents infinite loops on errors that require architectural changes or external dependency fixes.
-
-## Key Takeaways
-
-- Fix and debug are different problems — fix assumes you know what's broken, debug investigates
-- Cascade-aware ordering (blockers first) prevents wasting iterations on dependent errors
-- One fix per iteration keeps regressions attributable — you always know what to revert
-- The guard prevents regression accumulation — every fix is verified against the green baseline
-- `--from-debug` chains investigation findings directly into repair, skipping rediscovery
-- The loop automatically stops at zero errors — you don't need to watch it
+1. In `error_sorter.py`, which error category is first in the output? Why does this ordering matter?
+2. What happens if you change the order so lint errors come before build errors — how many more iterations would the simulation take?
+3. In the post-refactor example, 3 type errors disappeared as side effects of fixing one build error. Why does this happen?
+4. Design a `Guard` command for a project you know — what test command would you run after every fix to catch regressions early?
 
 ---
 

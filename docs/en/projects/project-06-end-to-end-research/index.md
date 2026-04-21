@@ -3,8 +3,8 @@
 [中文版本 →](/zh/projects/project-06-end-to-end-research/)
 
 **Paired with**: [Lecture 11](/en/lectures/lecture-11-universal-ship-pipeline/) + [Lecture 12](/en/lectures/lecture-12-overnight-runs-advanced/)  
-**Starter code**: [projects/project-06/starter/](https://github.com/zhimin-z/learn-auto-research/tree/main/projects/project-06/starter/)  
-**Solution**: [projects/project-06/solution/](https://github.com/zhimin-z/learn-auto-research/tree/main/projects/project-06/solution/)
+**Starter code**: [projects/project-06/starter/](https://github.com/AI4Scientist/learn-auto-research/tree/main/projects/project-06/starter/)  
+**Solution**: [projects/project-06/solution/](https://github.com/AI4Scientist/learn-auto-research/tree/main/projects/project-06/solution/)
 
 ---
 

@@ -1,38 +1,124 @@
 # 第三讲 — 5阶段循环的内部机制
 
-[English Version →](/en/lectures/lecture-03-five-stage-loop-internals/)
+`L01 > L02 > [ L03 ] L04 > L05 > L06 | L07 > L08 > L09 > L10 > L11 > L12`
+
+> *"git 是 agent 的记忆。"* — 它不需要记住过去，它只需要读 `git log`。
+>
+> **本讲核心**：逐阶段拆解每次 `/autoresearch` 迭代发生的事，以及每个设计决策背后的原因。
 
 代码示例：[code/](./code/)  
 配套项目：[项目二 — 从基准到最优](/zh/projects/project-02-baseline-to-optimal/)
 
 ---
 
-每一次 `/autoresearch` 运行都遵循相同的五个阶段。理解每个阶段的内部运作——以及背后的原因——是设计出成功而非停滞的研究会话的关键。
+## 问题
 
-五个阶段依次为：**理解（Understand）→ 形成假设（Hypothesize）→ 实验（Experiment）→ 评估（Evaluate）→ 记录并迭代（Log & Iterate）**。第一阶段要求 agent 在修改任何代码之前，先完整读取 `research.md`、`git log`、上一次实验的 diff 以及所有在作用域内的文件。这里的核心洞见是"**git 即记忆**"——agent 不在会话之间保存状态，git 历史就是它的记忆，每次提交都以 `experiment:` 前缀记录下尝试过的改变。
+当你运行 `/autoresearch` 时，agent 在做什么？如果你不了解内部机制，遇到问题时就无从诊断——不知道为什么循环停滞，不知道为什么某次迭代没被保留，不知道如何调整参数来改变行为。
 
-第二阶段要求 agent 提出一个具体、可证伪的单一假设，包含"改什么、为什么改、预期改进幅度"三个部分。**单一改变原则**是整个框架中最重要的约束：每次迭代只做一个改变，使得成功的原因可追溯，失败时回滚干净。第三阶段在验证之前先 `git commit`——这是有意为之，确保失败的实验也被保存在历史中，回滚只需一条 `git revert`。第四阶段运行评估器并应用保留策略，决定提交是否保留；Guard 在保留后运行，防止引入退化。第五阶段更新 `research.md`、`research_log.md` 和 `autoresearch-results.tsv`，然后立即返回第一阶段——无需人工干预。
+## 解决方案
 
-## 核心概念
+每次迭代都是同一个五阶段序列：
 
-**git 即记忆**：agent 通过读取 `git log` 和 `git diff` 重建研究历史，所有实验提交均以 `experiment:` 前缀标注。
+```
+阶段1: 理解       阶段2: 假设       阶段3: 实验
+research.md  -->  提出一个具体 --> git commit
+git log           可证伪的改变      (先提交)
+上次 diff                              |
+                                       v
+阶段5: 记录 <----- 阶段4: 评估
+更新 .tsv          运行 evaluate.py
+更新 .md           分数更好? → 保留
+立即进阶段1        分数变差? → revert
+```
 
-**单一改变原则**：每次迭代只做一个修改，使成功/失败原因完全可归因。
+五个阶段，没有人工干预，立即循环。
 
-**先提交后验证**：实验变更在运行评估器之前就 `git commit`，确保历史干净且回滚简单。
+## 工作原理
 
-**保留策略（keep policy）**：决定是否保留当前提交的规则，最常用的是 `score_improvement`（新分数优于前最佳则保留）。
+**阶段 1 — 理解（Understand）**
 
-**Guard**：在保留改变后运行的安全检查命令，防止 agent 在优化主指标时破坏其他不变量。
+```python
+# agent 在修改任何代码之前，先读取：
+# - research.md（目标、约束、历史）
+# - git log（哪些实验已经尝试过）
+# - 上次实验的 diff（上次改了什么）
+# - 所有作用域内的文件（当前代码状态）
+```
 
-## 关键要点
+关键洞见：**git 即记忆**。agent 没有跨会话的状态，但 git 历史有。每次提交以 `experiment:` 前缀记录尝试过的改变。
 
-- 阶段1（理解）是最容易被低估的阶段——读取 git 历史能防止重复尝试已失败的实验
-- 单一改变原则让每次迭代的结果都可解释
-- 先提交后验证保持 git 历史干净，使回滚变得简单
-- Guard 在指标检查之后运行，而非之前——在不阻碍探索的前提下防止退化
-- 阶段5触发后立即进入阶段1——循环在迭代之间不需要人工介入
-- 五个输出文件（`research.md`、`research_log.md`、`autoresearch-results.tsv`、`progress.png`、`final_report.md`）共同构成完整的研究会话记录
+**阶段 2 — 形成假设（Hypothesize）**
+
+```
+✓ 好的假设（具体、可证伪）：
+  "将 QuickSort 的 pivot 从固定第一元素改为随机元素，
+   预期对已排序输入的 median_time_s 降低约 40%"
+
+✗ 坏的假设（模糊、不可证伪）：
+  "尝试优化排序算法"
+```
+
+**单一改变原则**：每次迭代只做一个改变。这是整个框架最重要的约束——成功的原因可追溯，失败时回滚干净。
+
+**阶段 3 — 实验（Experiment）**
+
+```bash
+# 注意顺序：先提交，后验证
+git add -A
+git commit -m "experiment: 随机 pivot 替换固定 pivot"
+# 然后才运行 evaluate.py
+```
+
+为什么先提交？确保失败的实验也被保存在历史中。回滚只需一条 `git revert`。
+
+**阶段 4 — 评估（Evaluate）**
+
+```python
+# 运行评估器，应用保留策略
+new_score = run_evaluator()   # python evaluate.py
+if new_score < best_score:    # score_improvement 策略
+    keep()                    # 提交留在历史
+    run_guard()               # Guard 在保留后运行
+else:
+    revert()                  # git revert HEAD
+```
+
+Guard 在保留**之后**运行，不是之前——不阻碍探索，但防止退化。
+
+**阶段 5 — 记录并迭代（Log & Iterate）**
+
+```
+更新 research.md        → 追加新的历史行
+更新 autoresearch-results.tsv → 记录 iteration/metric/delta/status
+更新 research_log.md    → 人类可读的实验日志
+→ 立即返回阶段 1（无需人工干预）
+```
+
+## 变更内容
+
+| 组件 | 手动研究 | autoresearch 循环 |
+|------|----------|------------------|
+| 记忆 | 研究员的大脑 | `git log` + `research.md` |
+| 假设 | 随意 | 单一、具体、可证伪 |
+| 提交时机 | 验证后 | **验证前**（先提交）|
+| 回滚 | 手动、常被跳过 | 自动、可靠 |
+| 循环间隔 | 人的注意力 | 零间隔，立即迭代 |
+
+## 试一试
+
+运行循环模拟器，观察五个阶段实际发生的事：
+
+```sh
+cd docs/zh/lectures/lecture-03-five-stage-loop-internals/code
+python loop_simulator.py
+```
+
+观察输出并思考：
+
+1. 哪个阶段消耗了最多"时间"（模拟步骤）？为什么阶段1看起来最重要？
+2. 找到一次被 revert 的迭代。它的 `delta` 是多少？Guard 有没有触发？
+3. 把 `MAX_SCORE = 0.99` 改成 `MAX_SCORE = 0.85`，循环在第几轮停下来？
+4. 在输出的 TSV 数据里，`status=keep` 和 `status=revert` 的比例大约是多少？
 
 ---
 

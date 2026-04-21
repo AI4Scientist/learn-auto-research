@@ -3,8 +3,8 @@ import { defineConfig } from "vitepress";
 import { withMermaid } from "vitepress-plugin-mermaid";
 
 const docsBase = "/learn-auto-research/";
-const brandLogo = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%232563EB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><path d="M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>';
-const githubRepoTreeLink = "https://github.com/zhimin-z/learn-auto-research/tree/main";
+const brandLogo = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23B8593E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><path d="M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>';
+const githubRepoTreeLink = "https://github.com/AI4Scientist/learn-auto-research";
 
 const zhLectureItems = [
   { text: "欢迎", link: "/zh/" },
@@ -77,7 +77,7 @@ export default withMermaid(
     base: docsBase,
     title: "Learn AutoResearch",
     description:
-      "A project-based course on automating research using Karpathy-inspired autonomous improvement loops. Define a metric, set a goal, let the agent iterate overnight.",
+      "基于项目的自动化研究课程，使用 Karpathy 启发的自主改进循环。定义指标，设定目标，让 Agent 彻夜迭代。",
     cleanUrls: true,
     srcExclude: ["temp/**"],
     ignoreDeadLinks: true,
@@ -86,9 +86,7 @@ export default withMermaid(
     ],
     themeConfig: {
       logo: brandLogo,
-      search: {
-        provider: "local"
-      },
+      search: { provider: "local" },
       socialLinks: [{ icon: "github", link: githubRepoTreeLink }]
     },
     markdown: {
@@ -100,11 +98,11 @@ export default withMermaid(
     mermaid: {
       theme: 'base',
       themeVariables: {
-        primaryColor: '#EFF6FF',
-        primaryBorderColor: '#BFDBFE',
-        primaryTextColor: '#1E3A5F',
-        lineColor: '#93C5FD',
-        fontFamily: 'Inter, sans-serif',
+        primaryColor: '#F5EDE8',
+        primaryBorderColor: '#D89380',
+        primaryTextColor: '#252523',
+        lineColor: '#C4735A',
+        fontFamily: 'system-ui, sans-serif',
         fontSize: '18px'
       },
       flowchart: {
@@ -115,9 +113,31 @@ export default withMermaid(
     },
     locales: {
       root: {
-        label: "English",
-        lang: "en",
-        link: "/en/"
+        label: "简体中文",
+        lang: "zh-CN",
+        link: "/zh/",
+        themeConfig: {
+          nav: [
+            { text: "讲义", link: zhLectureItems[1].link, activeMatch: '^/zh/(lectures/.*)?$' },
+            { text: "项目", link: zhProjectItems[0].link, activeMatch: '^/zh/projects/' },
+            { text: "资料库", link: "/zh/resources/", activeMatch: '^/zh/resources/' },
+            { text: "Try AutoResearch", link: "https://github.com/karpathy/autoresearch", target: "_blank", rel: "noopener noreferrer" }
+          ],
+          sidebar: {
+            '/zh/projects/': [{ text: "项目", items: zhProjectItems }],
+            '/zh/resources/': [{ text: "资料库", items: zhResourceItems }],
+            '/zh/': [{ text: "讲义", items: zhLectureItems }]
+          },
+          outline: { level: [2, 3] },
+          docFooter: { prev: "上一篇", next: "下一篇" },
+          lastUpdated: { text: "最后更新于" },
+          returnToTopLabel: "回到顶部",
+          sidebarMenuLabel: "菜单",
+          darkModeSwitchLabel: "主题",
+          lightModeSwitchTitle: "切换到浅色模式",
+          darkModeSwitchTitle: "切换到深色模式",
+          socialLinks: [{ icon: "github", link: githubRepoTreeLink }]
+        }
       },
       en: {
         label: "English",
@@ -128,7 +148,7 @@ export default withMermaid(
             { text: "Lectures", link: enLectureItems[1].link, activeMatch: '^/en/(lectures/.*)?$' },
             { text: "Projects", link: enProjectItems[0].link, activeMatch: '^/en/projects/' },
             { text: "Library", link: "/en/resources/", activeMatch: '^/en/resources/' },
-            { text: "Try AutoResearch ↗", link: "https://github.com/karpathy/autoresearch", target: "_blank", rel: "noopener noreferrer" }
+            { text: "Try AutoResearch", link: "https://github.com/karpathy/autoresearch", target: "_blank", rel: "noopener noreferrer" }
           ],
           sidebar: {
             '/en/projects/': [{ text: "Projects", items: enProjectItems }],
@@ -137,40 +157,7 @@ export default withMermaid(
           },
           socialLinks: [{ icon: "github", link: githubRepoTreeLink }]
         }
-      },
-      zh: {
-        label: "简体中文",
-        lang: "zh-CN",
-        link: "/zh/",
-        themeConfig: {
-          nav: [
-            { text: "讲义", link: zhLectureItems[1].link, activeMatch: '^/zh/(lectures/.*)?$' },
-            { text: "项目", link: zhProjectItems[0].link, activeMatch: '^/zh/projects/' },
-            { text: "资料库", link: "/zh/resources/", activeMatch: '^/zh/resources/' },
-            { text: "Try AutoResearch ↗", link: "https://github.com/karpathy/autoresearch", target: "_blank", rel: "noopener noreferrer" }
-          ],
-          sidebar: {
-            '/zh/projects/': [{ text: "项目", items: zhProjectItems }],
-            '/zh/resources/': [{ text: "资料库", items: zhResourceItems }],
-            '/zh/': [{ text: "讲义", items: zhLectureItems }]
-          },
-          outline: {
-            level: [2, 3]
-          },
-          docFooter: {
-            prev: "上一篇",
-            next: "下一篇"
-          },
-          lastUpdated: {
-            text: "最后更新于"
-          },
-          returnToTopLabel: "回到顶部",
-          sidebarMenuLabel: "菜单",
-          darkModeSwitchLabel: "主题",
-          lightModeSwitchTitle: "切换到浅色模式",
-          darkModeSwitchTitle: "切换到深色模式",
-          socialLinks: [{ icon: "github", link: githubRepoTreeLink }]
-        }
       }
     }
-}));
+  })
+);

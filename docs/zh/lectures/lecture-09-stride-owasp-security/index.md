@@ -1,38 +1,120 @@
-# 第九讲 — STRIDE+OWASP自动安全审计
+# 第九讲 — STRIDE+OWASP 自动安全审计
 
-[English Version →](/en/lectures/lecture-09-stride-owasp-security/)
+`L01 > L02 > L03 > L04 > L05 > L06 | L07 > L08 > [ L09 ] L10 > L11 > L12`
+
+> *"每项发现必须有代码级证据。"* — 没有文件名和行号的安全发现不是发现，是猜测。
+>
+> **本讲核心**：`/autoresearch:security` 如何用 STRIDE 威胁建模 + OWASP Top 10 + 四种红队角色，把主观安全审计变成基于证据的可重复过程。
 
 代码示例：[code/](./code/)  
 配套项目：[项目五 — 安全审计流水线](/zh/projects/project-05-security-audit-pipeline/)
 
 ---
 
-传统安全审计昂贵、缓慢且主观。`/autoresearch:security` 使其自主化、基于证据且可重复。每一项发现都必须有代码级证据——文件、行号、攻击场景和可利用性证明。
+## 问题
 
-审计分两个系统性阶段。**STRIDE 威胁建模**首先对代码库进行全面扫描，覆盖六类威胁：欺骗（Spoofing）、篡改（Tampering）、抵赖（Repudiation）、信息泄露（Information Disclosure）、拒绝服务（Denial of Service）、权限提升（Elevation of Privilege）。STRIDE 扫描产生资产清单和信任边界图，成为后续 OWASP 扫描的基础。**OWASP Top 10 扫描**针对最常见的十类漏洞进行系统性搜索，包括访问控制失效、加密失败、注入攻击、不安全设计、安全配置错误、易受攻击组件、身份验证失败、软件完整性失败、日志记录失败和 SSRF。两个阶段完成后，agent 以四种对抗性角色进行红队分析：机会主义攻击者（寻找低成本高回报的漏洞）、内部威胁（假设攻击者可读取代码库）、国家级攻击者（寻找微妙的长期入侵途径）、脚本小子（测试针对常见框架的已知漏洞模式）。
+传统安全审计昂贵、缓慢且主观。审计质量取决于审计员的经验和当天的注意力——同一个代码库，两次审计结果可能大相径庭。更糟糕的是，"这里可能有问题"这样的发现毫无可操作性。
 
-每项发现必须包含：文件和行号、具体攻击场景、可利用性证明、严重级别（Critical/High/Medium/Low）和具体修复代码。审计结果输出到 7 个结构化文件中，`--fail-on High` 标志可将其集成为 CI/CD 流水线的质量门禁。
+## 解决方案
 
-## 核心概念
+```
+代码库
+  |
+  v
+阶段1: STRIDE 威胁建模
+  6类威胁系统性扫描
+  → 资产清单 + 信任边界图
+  |
+  v
+阶段2: OWASP Top 10 扫描
+  10类漏洞逐一搜索代码模式
+  → 带代码位置的发现列表
+  |
+  v
+阶段3: 四种红队角色
+  机会主义攻击者 | 内部威胁
+  国家级攻击者   | 脚本小子
+  → 多元攻击视角验证
+  |
+  v
+7个结构化输出文件
+  每项发现: 文件:行号 + 攻击场景 + 严重级别 + 修复代码
+```
 
-**STRIDE 框架**：系统性威胁分类法，涵盖六类威胁（欺骗、篡改、抵赖、信息泄露、拒绝服务、权限提升），在扫描具体漏洞之前先绘制威胁全貌。
+## 工作原理
 
-**OWASP Top 10**：覆盖最常见十类Web应用漏洞的结构化扫描框架，每类漏洞映射到具体代码模式。
+**阶段 1：STRIDE 威胁建模**
 
-**证据要求**：每项发现必须包含代码位置（文件:行号）和具体攻击场景——禁止纯理论推测。
+| 字母 | 威胁类型 | 典型问题 |
+|------|---------|---------|
+| S | 欺骗（Spoofing） | JWT 未验证签名？ |
+| T | 篡改（Tampering） | API 响应未签名？ |
+| R | 抵赖（Repudiation） | 管理员操作有审计日志吗？ |
+| I | 信息泄露（Information Disclosure） | 500 响应返回了堆栈追踪吗？ |
+| D | 拒绝服务（Denial of Service） | 用户输入能触发无限循环吗？ |
+| E | 权限提升（Elevation of Privilege） | 每个敏感操作都验证了角色吗？ |
 
-**四种红队角色**：机会主义攻击者、内部威胁、国家级攻击者、脚本小子——提供多元攻击视角。
+**阶段 2：OWASP Top 10 代码模式搜索**
 
-**CI/CD 集成**：`--fail-on High` 标志在发现 High 或 Critical 级别问题时以退出码1终止，可作为持续集成质量门禁；`--diff` 仅审计自上次审计以来变更的文件，实现快速增量扫描。
+```python
+# agent 在代码库中搜索这些模式
+危险模式 = [
+    "f\"SELECT",           # SQL 注入
+    "shell=True",          # 命令注入
+    "DEBUG=True",          # 安全配置错误
+    "requests.get(url",    # 未验证的 SSRF
+    "pickle.loads(",       # 不安全反序列化
+]
+```
 
-## 关键要点
+**证据要求（强制）**
 
-- STRIDE 在深入具体漏洞之前提供系统性威胁分类
-- OWASP Top 10 扫描提供对最常见漏洞类别的结构化覆盖
-- 每项发现都需要代码证据（文件:行号 + 攻击场景）——禁止理论推测
-- 四种红队角色提供多元攻击视角
-- 7个结构化输出文件覆盖从威胁建模到修复的完整审计生命周期
-- 使用 `--fail-on` 和 `--diff` 将安全审计纳入持续集成流程
+```markdown
+## 发现 #1
+- 文件: src/api/users.py:147
+- 代码: cursor.execute(f"SELECT * FROM users WHERE id={user_id}")
+- 攻击场景: 攻击者传入 `1 OR 1=1` 获取所有用户数据
+- 严重级别: Critical
+- 修复: cursor.execute("SELECT * FROM users WHERE id=?", (user_id,))
+```
+
+没有文件:行号，发现无效。
+
+**CI/CD 集成**
+
+```bash
+# 在 CI 中作为质量门禁
+/autoresearch:security --fail-on High   # 发现 High/Critical 时退出码 1
+
+# 增量扫描（只审计变更的文件）
+/autoresearch:security --diff           # 比完整扫描快 10 倍
+```
+
+## 变更内容
+
+| 方式 | 传统审计 | `/autoresearch:security` |
+|------|---------|------------------------|
+| 覆盖一致性 | 取决于审计员 | STRIDE + OWASP 100% 系统覆盖 |
+| 证据要求 | 无 | 文件:行号 + 攻击场景（强制） |
+| 可重复性 | 不同审计员结果不同 | 相同代码库结果可复现 |
+| CI 集成 | 手动 | `--fail-on` + `--diff` 自动化 |
+
+## 试一试
+
+运行 STRIDE 矩阵生成器和 OWASP 检查清单：
+
+```sh
+cd docs/zh/lectures/lecture-09-stride-owasp-security/code
+python stride_matrix.py "我的 API 服务"
+python owasp_checklist.py
+```
+
+思考题：
+
+1. 在 `stride_matrix.py` 的输出里，哪个威胁类别和你的项目最相关？
+2. `owasp_checklist.py` 列出的代码模式中，哪些你在自己的代码里见过？
+3. 为什么"理论上可能有 SQL 注入"不是有效发现，而"users.py:147 行的 f-string 查询"是？
+4. 如果你要把安全审计加入 CI，`--fail-on` 应该设置为什么级别？为什么？
 
 ---
 

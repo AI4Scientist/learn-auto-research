@@ -1,214 +1,146 @@
 # Lecture 12 — Overnight Runs & Advanced Patterns
 
-[中文版本 →](/zh/lectures/lecture-12-overnight-runs-advanced/)
+`L01 > L02 > L03 > L04 > L05 > L06 | L07 > L08 > L09 > L10 > L11 > [ L12 ]`
+
+> *"You sleep. The loop compounds."* — 100 experiments overnight, full git provenance in the morning. This is what Karpathy's original script demonstrated: the researcher's attention is the bottleneck, not the compute.
+>
+> **Core idea**: How to run autoresearch unattended overnight, monitor convergence from the terminal, integrate with CI/CD, and build custom evaluators for any domain.
 
 Code examples: [code/](./code/)  
 Practice project: [Project 06 — End-to-End Research Project](/en/projects/project-06-end-to-end-research/)
 
+[中文版本 →](/zh/lectures/lecture-12-overnight-runs-advanced/)
+
 ---
 
-The real power of autoresearch is what happens while you sleep. This lecture covers running loops unattended overnight, integrating with CI/CD pipelines, using MCP servers during loops, and building custom evaluators for novel domains.
+## The Problem
 
-## Overnight Runs
+The loop works in 20-iteration daytime sessions. But the real payoff is overnight: 100+ iterations while you sleep, wake up to `final_report.md` with the best result, full git history of every experiment. The challenge is keeping the loop alive, monitoring it without babysitting, and knowing when to stop.
 
-Three modes for long-running unattended loops:
+## The Solution
 
-**Foreground with tmux** (recommended):
+```
+Option 1: tmux (recommended)
+  tmux new-session -d -s research
+  claude -p '/autoresearch' --max-turns 200
+  Ctrl+B D to detach → loop keeps running
+  tmux attach -t research to check anytime
+
+Option 2: bash loop (shell-level control)
+  for i in $(seq 1 100); do
+    claude -p "/autoresearch Iterations: 1"
+    if python check_target.py research.md; then break; fi
+  done
+
+Option 3: CI/CD (nightly scheduled)
+  cron: '0 2 * * *'
+  claude -p "/autoresearch Iterations: 50" --cwd research/
+```
+
+## How It Works
+
+**1. tmux is the best overnight runner.**
+
 ```bash
 tmux new-session -d -s autoresearch
 tmux send-keys -t autoresearch "claude -p '/autoresearch' --max-turns 200" Enter
 # Detach: Ctrl+B D
-# Check progress anytime:
+# Check progress at any time:
 tmux attach -t autoresearch
 ```
 
-**Background with nohup**:
-```bash
-nohup claude -p '/autoresearch' --max-turns 200 > autoresearch.log 2>&1 &
-echo $! > autoresearch.pid
+tmux survives disconnects. The loop keeps running even if your SSH session drops. You can check in and detach without interrupting the loop.
 
-# Check progress
-tail -f autoresearch.log
-bash scripts/check_progress.sh ./my-research/
-```
+**2. Monitor convergence without babysitting.**
 
-**Bash loop script** (when you want shell-level control):
-```bash
-#!/bin/bash
-# autoresearch-loop.sh
-RESEARCH_DIR="$1"
-MAX_ITER="${2:-100}"
-
-for i in $(seq 1 $MAX_ITER); do
-  echo "=== Iteration $i / $MAX_ITER ==="
-  claude -p "/autoresearch Iterations: 1" --cwd "$RESEARCH_DIR"
-  
-  # Check if target was met
-  if python check_target.py "$RESEARCH_DIR/research.md"; then
-    echo "Target achieved after $i iterations"
-    exit 0
-  fi
-done
-echo "Budget exhausted: $MAX_ITER iterations"
-```
-
-## Monitoring Progress
-
-The `progress.png` file in the research directory is updated after every iteration. Open it in any image viewer to see the convergence curve.
-
-For terminal monitoring:
 ```bash
 # Watch the results TSV grow
 watch -n 30 "tail -20 autoresearch-results.tsv"
-
-# Check current best
-python -c "
-import csv
-with open('autoresearch-results.tsv') as f:
-    rows = list(csv.DictReader(f, delimiter='\t'))
-    kept = [r for r in rows if r['status'] == 'keep']
-    if kept:
-        best = min(kept, key=lambda r: float(r['score']))  # for minimize
-        print(f'Best: {best[\"score\"]} at iteration {best[\"iteration\"]}')
-"
 ```
 
-## MCP Server Integration
+Run `progress_monitor.py` to read the TSV and print a convergence report:
+- Total iterations, keep rate, best/worst/latest scores
+- Convergence status: still improving / stabilizing / converged (std of last 5 kept < 0.005)
 
-Any MCP server configured in Claude Code is available during the loop. This enables powerful research patterns:
+**3. `check_target.py` enables clean bash loop exits.**
 
-**Database queries during evaluation**:
+```bash
+python check_target.py research.md autoresearch-results.tsv
+# Exit code 0 = target met, exit code 1 = not yet
+```
+
+Use it in the bash loop to stop as soon as the target is reached — even mid-budget.
+
+**4. MCP servers extend what the evaluator can measure.**
+
+Any MCP server configured in Claude Code is available during the loop:
+
 ```markdown
 # research.md
 Evaluator: Use MCP postgres tool to run EXPLAIN ANALYZE on the target query
-Metric: query_ms (execution time in milliseconds)
+Metric: query_ms
 ```
 
-**API calls for scoring**:
 ```markdown
-# research.md
-Evaluator: Call MCP openai tool to judge prompt quality, average over 5 samples
-Metric: llm_judge_score (1-10)
+Evaluator: Call MCP openai tool to judge prompt quality, average 5 samples
+Metric: llm_judge_score
 ```
 
-**External monitoring**:
-```markdown
-# research.md  
-Guard: Use MCP grafana tool to check error rate < 0.1% for 5 minutes
-```
+Any external system becomes a metric source.
 
-## CI/CD Integration
-
-Running autoresearch as part of CI ensures research quality is maintained automatically:
-
-```yaml
-# .github/workflows/research.yml
-name: Automated Research
-
-on:
-  schedule:
-    - cron: '0 2 * * *'  # Run nightly at 2am
-
-jobs:
-  research:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run research loop
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          claude -p "/autoresearch Iterations: 50" --cwd research/
-      
-      - name: Security audit
-        run: |
-          claude -p "/autoresearch:security --fail-on High --diff"
-      
-      - name: Commit progress
-        run: |
-          git add research/
-          git commit -m "chore: nightly research progress" || true
-          git push
-```
-
-## Building Custom Evaluators
-
-For novel domains, you need custom evaluators. The contract is simple:
+**5. Custom evaluators follow one simple contract.**
 
 ```python
 #!/usr/bin/env python3
-"""
-Custom evaluator template.
-Must print: {"pass": bool, "score": float}
-Must exit 0 on success, non-zero on evaluation failure.
-"""
 import json, sys
 
-# 1. Run your measurement
 score = measure_something()
-
-# 2. Define target
 TARGET = 0.95
-passed = score >= TARGET  # or <= for minimize
+passed = score >= TARGET
 
-# 3. Output contract
 print(json.dumps({"pass": passed, "score": round(score, 4)}))
 sys.exit(0)
 ```
 
-**Example: LLM judge evaluator**:
-```python
-#!/usr/bin/env python3
-import json, anthropic, statistics
+Output `{"pass": bool, "score": float}` to stdout. Exit 0. That's the entire contract.
 
-client = anthropic.Anthropic()
-TARGET = 8.0
-N_SAMPLES = 5
+**6. The research → skill pipeline.**
 
-with open("prompt.txt") as f:
-    prompt = f.read()
-
-scores = []
-for _ in range(N_SAMPLES):
-    response = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=100,
-        messages=[{
-            "role": "user",
-            "content": f"Rate this prompt 1-10 for clarity and effectiveness. Reply with only a number.\n\nPrompt: {prompt}"
-        }]
-    )
-    scores.append(float(response.content[0].text.strip()))
-
-median = statistics.median(scores)
-print(json.dumps({"pass": median >= TARGET, "score": round(median, 2)}))
-```
-
-## The Research → Skill Pipeline
-
-A fully iterated research session produces knowledge that should be encoded as a reusable skill:
+A successful overnight run produces knowledge. Encode it as a reusable skill:
 
 ```
-research.md → final_report.md → SKILL.md
+research.md → autoresearch runs → final_report.md → SKILL.md
 ```
 
-The `final_report.md` from a successful autoresearch run contains the winning approach with evidence. This becomes the basis for a Claude Code skill that encodes the knowledge for future use.
+Use `/autoresearch:learn --mode init` to scan the research output and generate documentation from it automatically.
 
-Use `/autoresearch:learn` to automate this:
+## What Changed
+
+| Daytime 20-iteration session | Overnight run |
+|---|---|
+| Stops when you stop | tmux survives disconnects, loop keeps running |
+| Manual progress checks | `progress_monitor.py` prints convergence stats |
+| Fixed iteration budget | `check_target.py` stops the loop when target is met |
+| Standard evaluator only | MCP servers: any external system is a metric |
+| Findings in your head | `final_report.md` + full git provenance waiting in the morning |
+
+## Try It
+
+Generate a TSV with the L03 simulator, then run the monitoring tools:
+
+```sh
+cd docs/en/lectures/lecture-12-overnight-runs-advanced/code
+python progress_monitor.py autoresearch-results.tsv
+python check_target.py research.md autoresearch-results.tsv
 ```
-/autoresearch:learn --mode init
-```
-This scans the research output and generates documentation from it.
 
-## Key Takeaways
+Questions to think about:
 
-- tmux is the best overnight runner — you can check progress and it survives disconnects
-- `progress.png` gives visual confirmation the loop is working without reading logs
-- MCP servers extend what the evaluator can measure — any external system is now a metric source
-- CI/CD integration makes research a continuous process, not a one-time event
-- Custom evaluators follow a simple contract: run measurement, output `{"pass": bool, "score": float}`
-- The research → skill pipeline encodes successful research as reusable knowledge
+1. After running `progress_monitor.py`, what is the convergence status? What is `std_last5`?
+2. Change the convergence threshold from `std < 0.005` to `std < 0.05` — does the same data show "converged" now?
+3. In `check_target.py`, change `Target: < 0.5` to `Target: < 0.1` in `research.md` and re-run — what is the exit code?
+4. Design a custom evaluator for something you'd actually want to optimize: what does `measure_something()` do, what is `TARGET`, and is the direction minimize or maximize?
 
 ---
 
-**Course Complete.** You now have the full autoresearch toolkit. Start with [Project 06](/en/projects/project-06-end-to-end-research/) to build a complete pipeline.
+**Course Complete.** You now have the full autoresearch toolkit. Start with [Project 06](/en/projects/project-06-end-to-end-research/) to build a complete research pipeline end to end.

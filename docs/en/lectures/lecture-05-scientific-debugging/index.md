@@ -1,144 +1,122 @@
 # Lecture 05 — Scientific Debugging
 
-[中文版本 →](/zh/lectures/lecture-05-scientific-debugging/)
+`L01 > L02 > L03 > L04 > [ L05 ] L06 | L07 > L08 > L09 > L10 > L11 > L12`
+
+> *"A disproven hypothesis is also progress."* — Knowing what did NOT cause the bug eliminates the search space, just as surely as knowing what did.
+>
+> **Core idea**: How `/autoresearch:debug` applies the scientific method to bugs — one falsifiable hypothesis per iteration, systematic evidence collection, and a permanent record that future developers can read.
 
 Code examples: [code/](./code/)  
 Practice project: [Project 03 — Debug a Real Failure](/en/projects/project-03-debug-real-failure/)
 
+[中文版本 →](/zh/lectures/lecture-05-scientific-debugging/)
+
 ---
 
-Most debugging is not scientific. It is archaeological. The developer digs through logs, tries things, changes multiple variables at once, and eventually stumbles on the fix — without ever understanding why the fix worked.
+## The Problem
 
-`/autoresearch:debug` applies the scientific method to bugs: one falsifiable hypothesis per iteration, systematic evidence collection, and a permanent record of what was tested and what was learned.
+Most debugging is archaeological: dig through logs, try multiple things at once, stumble onto the fix without knowing why it worked. Three failure modes:
 
-## Why Most Debugging is Slow
+**Multi-variable changes**: Change three things, bug disappears — but which change fixed it? When the bug comes back, you don't know what to do.
 
-The standard debugging session looks like this: observe a symptom, form a vague hypothesis ("it's probably the database connection"), make several changes at once, observe whether the symptom changes, make several more changes, repeat.
+**Confirmation bias**: Test only the hypotheses you believe are true. Evidence piles up on one side. Dead ends go unrecorded.
 
-This approach has three problems:
+**Lost knowledge**: When the debugging session ends, failed hypotheses are forgotten. The next developer hits the same bug and starts over.
 
-**Multi-variable changes.** When you change three things and the bug goes away, you don't know which change fixed it. When the bug comes back, you don't know which change to make.
-
-**Confirmation bias.** Developers tend to test hypotheses they believe are true and not test the ones that would falsify their belief. Evidence accumulates only on one side.
-
-**Lost institutional knowledge.** When a debugging session ends, the failed hypotheses are forgotten. The next developer who encounters the same bug starts from scratch.
-
-`/autoresearch:debug` solves all three: one hypothesis per iteration, systematic falsification, and every hypothesis — confirmed and disproven — logged to `hypotheses.md` and `eliminated.md`.
-
-## The Debug Loop
+## The Solution
 
 ```
-1. Gather symptoms: what exactly is broken? Error message, stack trace, reproduction steps
-2. Recon: map the error surface — which files, which paths, which conditions trigger the bug?
-3. Hypothesize: ONE specific, testable hypothesis with a prediction
-4. Test: design and run exactly ONE experiment to falsify or confirm
-5. Classify: confirmed / disproven / inconclusive
-6. Log: record the hypothesis, test, evidence, and conclusion
-7. Repeat: move to next hypothesis (informed by what was eliminated)
+1. Gather symptoms  ← exact error message, reproduction steps, frequency
+2. Recon            ← map the error surface: which files, conditions, paths
+3. Hypothesize      ← ONE specific, testable hypothesis + prediction
+4. Test             ← ONE experiment designed to falsify it
+5. Classify         ← confirmed / disproven / inconclusive
+6. Log              ← record hypothesis, test, evidence, conclusion
+7. Repeat           ← informed by what was eliminated
+            ↓
+        Terminates when: root cause confirmed + fix applied
+                     OR: max_iterations exhausted
 ```
 
-The loop terminates when: all hypotheses are classified + a fix is applied, OR `max_iterations` is exhausted.
+Every hypothesis goes into `hypotheses.md`. Every eliminated hypothesis goes into `eliminated.md`. Nothing is forgotten.
 
-## The 7 Investigation Techniques
+## How It Works
 
-The agent selects from 7 techniques based on the type of bug:
+**1. One hypothesis, one test.**
 
-**1. Binary search**: Divide the codebase or input space in half. Narrow down which half contains the bug. Repeat until the exact location is identified. Best for: regressions, "it worked before."
+Good: *"H-002: Request timeout shorter than database query. Prediction: Adding timing middleware will show 503 requests all took >5s."*
 
-**2. Differential debugging**: Find a version that works, find a version that doesn't. What changed between them? `git bisect` automates this. Best for: "it used to work."
+Bad: *"Probably the database connection."* (Can't be tested. Can't be falsified.)
 
-**3. Minimal reproduction**: Strip down the failing case to the smallest possible version that still reproduces the bug. This isolates the exact conditions. Best for: complex multi-component bugs.
+**2. Falsification is the goal.**
 
-**4. Trace execution**: Add logging or use a debugger to trace the exact execution path when the bug occurs. Best for: unexpected state, wrong control flow.
+If H-001 (connection pool exhaustion) is disproven, the search space shrinks. You now know you're not looking for a connection pool problem. Disproven ≠ wasted — it's information.
 
-**5. Pattern search**: Search the codebase for similar code patterns. If the bug is in one place, a variant of it may exist elsewhere. Best for: systematic errors, copy-paste bugs.
+**3. The 7 investigation techniques.**
 
-**6. Working backwards**: Start from the symptom and trace backwards through the call stack. What state is wrong? What call produced that state? Repeat until you find the root cause. Best for: complex state bugs.
+The agent selects based on bug type:
 
-**7. Rubber duck**: Explain the bug out loud (to the agent's reasoning process). Articulating the problem in words often reveals the assumption that's wrong. Best for: subtle logic errors.
+| Technique | Best for |
+|---|---|
+| Binary search | Regressions: "it worked before" |
+| Differential (git bisect) | "it used to work" — find the breaking commit |
+| Minimal reproduction | Complex multi-component bugs |
+| Trace execution | Unexpected state, wrong control flow |
+| Pattern search | Systematic errors, copy-paste bugs |
+| Working backwards | Complex state bugs: trace from symptom to cause |
+| Rubber duck | Subtle logic errors: articulate to reveal the assumption |
 
-The agent automatically switches techniques based on progress. If binary search hasn't narrowed the search space after 3 iterations, it switches to trace execution.
+If binary search hasn't narrowed the space after 3 iterations, the agent switches technique.
 
-## Output Files
-
-Three files capture the debug session:
-
-**`hypotheses.md`**: All hypotheses, their status, and evidence:
-```markdown
-## H-001 — Database connection pool exhausted
-Status: DISPROVEN
-Evidence: Pool size is 10, current connections is 3. Not exhausted.
-Test: Added logging to connection acquisition — all connections released normally.
-Eliminated: 2026-04-20 14:23
-
-## H-002 — Request timeout shorter than database query
-Status: CONFIRMED
-Evidence: Timeout = 5s. Slow query log shows queries averaging 8.2s.
-Test: SET statement_timeout = 30000 in test — all 503s disappeared.
-Fix: Increase timeout to 30s, add query optimization for the slow query.
-```
-
-**`eliminated.md`**: A clean list of what's been ruled out (fast reference):
-```
-- Database connection pool exhaustion (H-001)
-- Memory leak causing OOM (H-003)
-- Load balancer misconfiguration (H-005)
-```
-
-**`findings.md`**: Confirmed bugs, reproduction steps, and recommended fixes.
-
-## A Real Example: FastAPI 503 Errors
-
-**Symptom**: POST /users returns 503 intermittently (~30% of the time), no pattern to which requests fail.
-
-**Recon**: 503 means "Service Unavailable." In FastAPI with uvicorn, this can mean: worker crash, timeout, resource exhaustion, or upstream dependency failure.
-
-**H-001**: Worker process crashing due to uncaught exception.
-Test: Check uvicorn access logs for worker restart events.
-Result: No worker restarts in the past hour. DISPROVEN.
-
-**H-002**: Request timeout — the handler takes longer than the configured timeout.
-Test: Add timing middleware. Log request duration for all POST /users calls.
-Result: 503 requests all took >5s. Non-503 requests took <1s. CONFIRMED correlation.
-
-**H-003**: Slow requests caused by database query in the hot path.
-Test: Add query timing in the handler. Log SQL duration.
-Result: `SELECT * FROM users WHERE email = ?` takes 4.8s on first call, 0.1s on subsequent calls.
-
-**Root cause identified**: Missing index on `users.email`. Full table scan on first call (cold cache) takes 4.8s, exceeding the 5s timeout.
-
-**Fix**: `CREATE INDEX idx_users_email ON users(email);`
-
-**Verification**: 1000 POST /users requests after index creation — 0 timeouts, average 0.2s.
-
-This investigation took 4 iterations. Without systematic logging of what was eliminated, it could have taken a day.
-
-## Using `/autoresearch:debug`
+**4. Three output files capture everything.**
 
 ```
-/autoresearch:debug
-Scope: src/api/**/*.ts
+hypotheses.md   → all hypotheses, status, evidence, conclusion
+eliminated.md   → clean list of ruled-out causes (fast reference)
+findings.md     → confirmed root causes + reproduction steps + fix
+```
+
+**Real example — FastAPI 503 errors:**
+
+```
 Symptom: POST /users returns 503 ~30% of requests
-Iterations: 20
+
+H-001: Worker crash     → check uvicorn logs → no restarts → DISPROVEN
+H-002: Request timeout  → add timing middleware → 503 requests all >5s → CONFIRMED
+H-003: Slow DB query    → add SQL timing → SELECT * FROM users took 4.8s cold → CONFIRMED
+
+Root cause: missing index on users.email
+Fix: CREATE INDEX idx_users_email ON users(email)
+Verification: 1000 requests after index → 0 timeouts, avg 0.2s
 ```
 
-The agent asks 3 setup questions:
-1. What is the symptom? (error message, frequency, reproduction steps)
-2. What is the scope? (which files are in-scope for investigation)
-3. What constitutes "found"? (when can the loop stop — confirmed root cause, or confirmed root cause + fix applied)
+4 iterations. Without systematic hypothesis tracking, this was a day of work.
 
-Then it runs the debug loop autonomously, producing `hypotheses.md`, `eliminated.md`, and `findings.md` as it goes.
+## What Changed
 
-Chain with fix: `/autoresearch:debug --fix` — after confirming root cause, automatically switches to `/autoresearch:fix` to repair it.
+| Traditional debugging | Scientific debugging |
+|---|---|
+| Change multiple things at once | One hypothesis, one test per iteration |
+| Failed approaches forgotten | Every disproven hypothesis in `eliminated.md` |
+| Bug fix = mystery | Root cause documented in `findings.md` |
+| Next developer starts over | Next developer reads `hypotheses.md` and continues |
 
-## Key Takeaways
+## Try It
 
-- Scientific debugging requires one hypothesis per iteration, not multi-variable changes
-- Falsification is as valuable as confirmation — knowing what *didn't* cause the bug is progress
-- The 7 techniques are not sequential — the agent selects based on bug type and switches when stuck
-- `eliminated.md` is the most valuable output — it prevents re-investigating dead ends
-- Chain `/autoresearch:debug --fix` for a complete investigate-then-repair pipeline
-- The permanent record in `hypotheses.md` is institutional knowledge — future developers start where you left off
+Run the hypothesis tracker and falsification loop:
+
+```sh
+cd docs/en/lectures/lecture-05-scientific-debugging/code
+python hypothesis_tracker.py
+python falsification_loop.py
+```
+
+Questions to think about:
+
+1. After running `hypothesis_tracker.py`, how many hypotheses are in each status (confirmed / disproven / inconclusive)?
+2. What's in `eliminated.md`? Why does this file exist separately from `hypotheses.md`?
+3. In the FastAPI 503 example, why was H-001 worth testing first even though it turned out to be wrong?
+4. Think of a bug you've encountered — write 3 hypotheses for it in the format: `H-00N: [cause]. Prediction: [observable evidence if true].`
 
 ---
 

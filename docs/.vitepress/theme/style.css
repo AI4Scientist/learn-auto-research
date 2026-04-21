@@ -1,0 +1,418 @@
+/* ===== Learn AutoResearch — Custom VitePress Styles ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap');
+
+/* ---------- CSS Variables (Light) ---------- */
+:root {
+  --vp-c-bg: #F8FAFF;
+  --vp-c-bg-alt: #EFF6FF;
+  --vp-c-bg-elv: #FFFFFF;
+  --vp-c-bg-soft: #EFF6FF;
+
+  --vp-c-text-1: #1E1E2E;
+  --vp-c-text-2: #3C4A6B;
+  --vp-c-text-3: #6B7A99;
+
+  /* Brand - Blue */
+  --vp-c-brand-1: #2563EB;
+  --vp-c-brand-2: #1D4ED8;
+  --vp-c-brand-3: #1E40AF;
+  --vp-c-brand-soft: rgba(37, 99, 235, 0.08);
+
+  /* Sidebar */
+  --vp-sidebar-width: 296px;
+  --vp-sidebar-bg-color: #EFF6FF;
+  --vp-c-divider: rgba(0, 0, 0, 0.08);
+
+  /* Layout */
+  --vp-nav-bg-color: #F8FAFF;
+  --vp-layout-max-width: 1376px;
+
+  /* Typography */
+  --vp-font-family-base: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --vp-font-family-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* ---------- Dark mode ---------- */
+.dark {
+  --vp-c-bg: #0F172A;
+  --vp-c-bg-alt: #0B1120;
+  --vp-c-bg-elv: #1E293B;
+  --vp-c-bg-soft: #0B1120;
+
+  --vp-c-text-1: #E2E8F0;
+  --vp-c-text-2: #94A3B8;
+  --vp-c-text-3: #64748B;
+
+  --vp-c-brand-1: #60A5FA;
+  --vp-c-brand-2: #3B82F6;
+  --vp-c-brand-3: #2563EB;
+  --vp-c-brand-soft: rgba(96, 165, 250, 0.12);
+
+  --vp-sidebar-bg-color: #0B1120;
+  --vp-nav-bg-color: #0F172A;
+  --vp-c-divider: rgba(255, 255, 255, 0.08);
+}
+
+/* ---------- Global typography ---------- */
+.vp-doc {
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.vp-doc h1 {
+  font-family: 'Newsreader', serif;
+  font-size: 3.5rem;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-top: 2rem;
+  margin-bottom: 1.5rem;
+  color: var(--vp-c-text-1);
+}
+
+.vp-doc h2 {
+  font-family: 'Newsreader', serif;
+  font-size: 2rem;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin-top: 2.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+
+.vp-doc h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 2rem;
+}
+
+/* ---------- Links ---------- */
+.vp-doc a {
+  color: var(--vp-c-brand-1);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.vp-doc a:hover {
+  color: var(--vp-c-brand-2);
+  text-decoration: underline;
+}
+
+/* ---------- Blockquotes ---------- */
+.vp-doc blockquote {
+  border-left: 4px solid var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 20px;
+  margin: 16px 0;
+  font-style: normal;
+}
+
+.vp-doc blockquote p {
+  margin: 0;
+}
+
+/* ---------- Code blocks ---------- */
+.vp-doc code {
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.9em;
+}
+
+.vp-doc div[class*='language-'] {
+  border-radius: 12px;
+  margin: 16px 0;
+  border: 1px solid var(--vp-c-divider);
+  background-color: var(--vp-c-bg-elv);
+}
+
+.vp-doc :not(pre) > code {
+  background: var(--vp-c-bg-alt);
+  color: var(--vp-c-text-1);
+  padding: 3px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--vp-c-divider);
+  font-size: 0.88em;
+}
+
+/* ---------- Lists ---------- */
+.vp-doc ul, .vp-doc ol {
+  padding-left: 1.25rem;
+}
+
+.vp-doc li {
+  margin: 6px 0;
+}
+
+.vp-doc li::marker {
+  color: var(--vp-c-brand-1);
+}
+
+/* ---------- Tables ---------- */
+.vp-doc table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 16px 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.vp-doc th, .vp-doc td {
+  padding: 10px 16px;
+  border: 1px solid var(--vp-c-divider);
+}
+
+.vp-doc th {
+  background: var(--vp-c-brand-soft);
+  font-weight: 600;
+}
+
+/* ---------- Horizontal rule ---------- */
+.vp-doc hr {
+  border: none;
+  border-top: 1px solid var(--vp-c-divider);
+  margin: 2rem 0;
+}
+
+/* ---------- Homepage hero ---------- */
+.VPHero .name {
+  font-size: 3.2rem !important;
+}
+
+.VPHero .text {
+  font-size: 1.35rem !important;
+  line-height: 1.5 !important;
+  max-width: 600px !important;
+}
+
+.VPHero .tagline {
+  font-size: 1.1rem !important;
+  line-height: 1.6 !important;
+  max-width: 560px !important;
+}
+
+/* ---------- Feature cards ---------- */
+.VPFeature {
+  border-radius: 12px !important;
+  border: 1px solid var(--vp-c-divider) !important;
+  transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s !important;
+  padding: 20px 24px !important;
+}
+
+.VPFeature:hover {
+  border-color: var(--vp-c-brand-1) !important;
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.1) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ---------- Navigation ---------- */
+.VPNavBarTitle {
+  font-family: 'Newsreader', ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  font-size: 1.45rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--vp-c-text-1);
+}
+
+.VPNavBarMenuLink {
+  position: relative;
+  color: var(--vp-c-text-2) !important;
+  font-weight: 500 !important;
+  padding: 0 2px !important;
+  margin: 0 12px;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  transition: all 0.2s ease;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.VPNavBarMenuLink:hover {
+  color: var(--vp-c-text-1) !important;
+}
+
+.VPNavBarMenuLink.active {
+  color: var(--vp-c-text-1) !important;
+}
+
+.VPNavBarMenuLink.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--vp-c-brand-1);
+}
+
+/* Try AutoResearch button */
+.VPNavBarMenuLink[href*="uditgoenka/autoresearch"] {
+  background-color: var(--vp-c-brand-1) !important;
+  color: #FFFFFF !important;
+  border-radius: 20px !important;
+  padding: 0 16px !important;
+  margin: 0 4px 0 12px !important;
+  height: 36px !important;
+  display: flex !important;
+  align-items: center;
+}
+
+.VPNavBarMenuLink[href*="uditgoenka/autoresearch"]:hover {
+  background-color: var(--vp-c-brand-2) !important;
+}
+
+.VPNavBarMenuLink[href*="uditgoenka/autoresearch"]::after {
+  display: none !important;
+}
+
+/* GitHub button */
+.VPNavBarSocialLink {
+  background-color: #1A1A1A !important;
+  color: #FFFFFF !important;
+  border-radius: 20px;
+  padding: 0 16px 0 12px !important;
+  height: 32px !important;
+  width: auto !important;
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.VPNavBarSocialLink:hover {
+  background-color: #333333 !important;
+}
+
+.VPNavBarSocialLink::after {
+  content: "GitHub";
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-family: var(--vp-font-family-base);
+  margin-left: 4px;
+}
+
+.dark .VPNavBarSocialLink {
+  background-color: #E5E5E5 !important;
+  color: #1A1A1A !important;
+}
+
+/* ---------- Sidebar ---------- */
+.VPSidebar {
+  width: min(360px, calc(100vw - 24px));
+  padding: 28px 24px 96px;
+  background-color: var(--vp-sidebar-bg-color) !important;
+  border-right: 1px solid var(--vp-c-divider) !important;
+}
+
+.VPSidebar .VPSidebarItem .item .link {
+  border-radius: 8px !important;
+  color: var(--vp-c-text-2) !important;
+  font-size: 0.9rem;
+  padding: 8px 12px !important;
+  margin: 2px 0;
+}
+
+.VPSidebar .VPSidebarItem .item .link:hover {
+  color: var(--vp-c-text-1) !important;
+  background-color: rgba(37, 99, 235, 0.06) !important;
+}
+
+.VPSidebar .VPSidebarItem.is-active > .item > .link {
+  color: var(--vp-c-brand-1) !important;
+  font-weight: 600 !important;
+  background-color: var(--vp-c-brand-soft) !important;
+}
+
+/* ---------- Card grid for index pages ---------- */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.card {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  padding: 20px;
+  background-color: var(--vp-c-bg-elv);
+  transition: all 0.2s ease;
+  text-decoration: none !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.card:hover {
+  border-color: var(--vp-c-brand-1);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+  transform: translateY(-1px);
+}
+
+.card h3 {
+  margin: 0 0 8px 0 !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  color: var(--vp-c-text-1);
+}
+
+.card p {
+  margin: 0 !important;
+  font-size: 0.95rem;
+  color: var(--vp-c-text-2);
+  line-height: 1.5;
+}
+
+/* ---------- Index list ---------- */
+.index-list {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 16px 0 !important;
+}
+
+.index-list li {
+  position: relative;
+  padding-left: 24px;
+  margin-bottom: 12px !important;
+  color: var(--vp-c-text-2);
+  line-height: 1.6;
+}
+
+.index-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--vp-c-brand-1);
+}
+
+.index-list strong {
+  color: var(--vp-c-text-1);
+}
+
+/* ---------- Mermaid ---------- */
+.vp-doc .mermaid {
+  background: transparent;
+  border: 0;
+  padding: 12px 0;
+  margin: 20px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.vp-doc .mermaid svg {
+  display: block;
+  width: auto !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: min(68vh, 760px) !important;
+  margin: 0 auto;
+}
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb { background: var(--vp-c-brand-soft); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--vp-c-brand-1); }

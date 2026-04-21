@@ -1,6 +1,5 @@
 # 欢迎来到 Learn AutoResearch
 
-[English Version →](/en/)
 
 Learn AutoResearch 是一门基于项目的课程，教你用 autoresearch 框架实现研究自动化——它是 Karpathy 自主 ML 训练循环的泛化版本，适用于任何有可测量指标的领域。
 

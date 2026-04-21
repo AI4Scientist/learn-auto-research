@@ -1,6 +1,5 @@
 # 项目 01 — 你的第一个研究循环
 
-[English Version →](/en/projects/project-01-first-research-loop/)
 
 **配套讲座**：[第 01 讲](/zh/lectures/lecture-01-why-manual-iteration-fails/) + [第 02 讲](/zh/lectures/lecture-02-what-is-a-measurable-research-goal/)  
 **起始代码**：[projects/project-01/starter/](https://github.com/AI4Scientist/learn-auto-research/tree/main/projects/project-01/starter/)  

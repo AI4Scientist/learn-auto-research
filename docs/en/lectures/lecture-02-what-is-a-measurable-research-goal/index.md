@@ -9,7 +9,6 @@
 Code examples: [code/](./code/)  
 Practice project: [Project 01 — Your First Research Loop](/en/projects/project-01-first-research-loop/)
 
-[中文版本 →](/zh/lectures/lecture-02-what-is-a-measurable-research-goal/)
 
 ---
 

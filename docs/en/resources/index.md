@@ -1,6 +1,5 @@
 # Resource Library
 
-[中文版本 →](/zh/resources/)
 
 Copy-ready templates, reference guides, and domain examples for your own autoresearch projects.
 

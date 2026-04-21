@@ -1,6 +1,5 @@
 # 项目 04 — 架构决策辩论
 
-[English Version →](/en/projects/project-04-architecture-debate/)
 
 **配套讲座**：[第 07 讲](/zh/lectures/lecture-07-five-expert-predict/) + [第 08 讲](/zh/lectures/lecture-08-adversarial-refinement/)  
 **起始代码**：[projects/project-04/starter/](https://github.com/AI4Scientist/learn-auto-research/tree/main/projects/project-04/starter/)  

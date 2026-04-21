@@ -1,6 +1,5 @@
 # 项目
 
-[English Version →](/en/projects/)
 
 六个动手项目，每个与一个阶段的讲义配套。每个项目都有 `starter/` 目录（起点）和 `solution/` 目录（参考实现）。
 

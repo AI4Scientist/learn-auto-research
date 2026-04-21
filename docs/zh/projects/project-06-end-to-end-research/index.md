@@ -1,6 +1,5 @@
 # 项目 06 — 端到端研究项目
 
-[English Version →](/en/projects/project-06-end-to-end-research/)
 
 **配套讲座**：[第 11 讲](/zh/lectures/lecture-11-universal-ship-pipeline/) + [第 12 讲](/zh/lectures/lecture-12-overnight-runs-advanced/)  
 **起始代码**：[projects/project-06/starter/](https://github.com/AI4Scientist/learn-auto-research/tree/main/projects/project-06/starter/)  

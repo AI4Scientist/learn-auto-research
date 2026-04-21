@@ -1,6 +1,5 @@
 # 资料库
 
-[English Version →](/en/resources/)
 
 即拿即用的模板、参考手册和领域案例，供你在自己的研究项目中使用。
 

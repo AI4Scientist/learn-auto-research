@@ -1,6 +1,5 @@
 # Projects
 
-[中文版本 →](/zh/projects/)
 
 Six hands-on projects, each paired with a lecture phase. Every project has a `starter/` directory (your starting point) and a `solution/` directory (reference implementation).
 

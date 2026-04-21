@@ -1,6 +1,5 @@
 # 项目 02 — 从基线到最优
 
-[English Version →](/en/projects/project-02-baseline-to-optimal/)
 
 **配套讲座**：[第 03 讲](/zh/lectures/lecture-03-five-stage-loop-internals/) + [第 04 讲](/zh/lectures/lecture-04-what-to-do-when-stuck/)  
 **起始代码**：[projects/project-02/starter/](https://github.com/AI4Scientist/learn-auto-research/tree/main/projects/project-02/starter/)  

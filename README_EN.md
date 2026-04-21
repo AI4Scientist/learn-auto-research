@@ -87,12 +87,12 @@ Every project ships with a runnable starter and reference solution:
 
 ```
 projects/
-├── project-01/   sort optimization      (Python, stdlib)
-├── project-02/   function fitting        (Python, stdlib)
-├── project-03/   FastAPI debugging       (Python, stdlib)
-├── project-04/   architecture debate     (Python, stdlib)
-├── project-05/   security audit          (Python, stdlib)
-└── project-06/   end-to-end pipeline     (Python, stdlib)
+├── project-01/   sort optimization
+├── project-02/   function fitting
+├── project-03/   FastAPI debugging
+├── project-04/   architecture debate
+├── project-05/   security audit
+└── project-06/   end-to-end pipeline
 ```
 
 Each `starter/evaluate.py` follows the contract:
@@ -139,12 +139,6 @@ npm run build
   url    = {https://github.com/AI4Scientist/learn-auto-research}
 }
 ```
-
----
-
-## Acknowledgements
-
-Core loop concept inspired by [Andrej Karpathy's autoresearch](https://github.com/karpathy/autoresearch).
 
 ## License
 

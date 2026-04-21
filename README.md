@@ -87,12 +87,12 @@ flowchart LR
 
 ```
 projects/
-├── project-01/   排序优化          (Python, 标准库)
-├── project-02/   函数拟合          (Python, 标准库)
-├── project-03/   FastAPI 调试      (Python, 标准库)
-├── project-04/   架构辩论          (Python, 标准库)
-├── project-05/   安全审计          (Python, 标准库)
-└── project-06/   端到端流水线      (Python, 标准库)
+├── project-01/   排序优化
+├── project-02/   函数拟合
+├── project-03/   FastAPI 调试
+├── project-04/   架构辩论
+├── project-05/   安全审计
+└── project-06/   端到端流水线
 ```
 
 每个 `starter/evaluate.py` 遵循统一协议：
@@ -139,12 +139,6 @@ npm run build
   url    = {https://github.com/AI4Scientist/learn-auto-research}
 }
 ```
-
----
-
-## 致谢
-
-核心循环理念来源于 [Andrej Karpathy 的 autoresearch](https://github.com/karpathy/autoresearch)。
 
 ## 许可证
 

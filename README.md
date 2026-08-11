@@ -1,4 +1,4 @@
-# Learn AutoResearch
+# Learn AutoResearch（⚠️ Alpha Preview）
 
 <p align="center">
   <strong>Define a metric. Set a target. Let the agent iterate overnight.</strong><br/>
@@ -25,6 +25,9 @@
   <a href="README_CN.md">中文版 →</a> &nbsp;|&nbsp;
   <a href="https://AI4Scientist.github.io/learn-auto-research/">Live Docs →</a>
 </p>
+
+> [!CAUTION]
+> ⚠️ **Alpha Preview**: This is an early build. Content is still being completed and revised: sections, examples, and wording may continue to change. Feedback via Issues is welcome.
 
 ---
 
